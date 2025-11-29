@@ -3,7 +3,95 @@
 <head>
     <title>Summarize PDF</title>
     <link rel="stylesheet" href="../styles.css">
+
+    <style>
+        /* ---------- PREMIUM PAGE HEADER ---------- */
+        .page-title {
+            font-size: 38px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #b784ff, #6ea8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ---------- FILE UPLOAD PREMIUM ---------- */
+        .file-input-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        input[type="file"] {
+            padding: 14px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(12px);
+            width: 100%;
+            max-width: 600px;
+            color: #ddd;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        input[type="file"]:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        /* ---------- AI RESULT CARD ---------- */
+        .premium-output {
+            background: rgba(255,255,255,0.07);
+            border-radius: 22px;
+            padding: 32px;
+            margin-top: 25px;
+            backdrop-filter: blur(14px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+            color: #e5e5ff;
+            line-height: 1.8;
+            font-size: 17px;
+            border: 1px solid rgba(255,255,255,0.12);
+            position: relative;
+            animation: fadeInSlide 0.7s ease forwards;
+            white-space: pre-wrap;
+        }
+
+        /* Notion-style left colored stripe */
+        .premium-output::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(180deg, #8b5cff, #4278ff, #0ff);
+            border-radius: 6px 0 0 6px;
+        }
+
+        /* AI tag */
+        .premium-output::after {
+            content: "✨ AI Generated Summary";
+            position: absolute;
+            top: -14px;
+            left: 20px;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, #7a5cff, #3b7bff);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        /* Fade-in animation */
+        @keyframes fadeInSlide {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
+
 <body>
 
 <button class="menu-btn" onclick="toggleSidebar()">☰</button>
@@ -20,16 +108,22 @@
 </div>
 
 <div class="container">
-    <h2>Summarize PDF</h2>
+    
+    <h2 class="page-title">Summarize PDF</h2>
 
-    <input type="file" id="pdfFile" accept="application/pdf">
-    <br>
+    <div class="file-input-wrapper">
+        <input type="file" id="pdfFile" accept="application/pdf">
+    </div>
+
     <button class="btn" onclick="summarizePDF()">Summarize</button>
 
     <div id="loader" class="loader"></div>
 
-    <h3>Result</h3>
-    <pre id="result"></pre>
+    <h3 style="margin-top: 30px;">Result</h3>
+
+    <!-- PREMIUM RESULT CARD -->
+    <div id="result" class="premium-output"></div>
+
 </div>
 
 <script src="../app.js"></script>
