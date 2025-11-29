@@ -5,88 +5,80 @@
     <link rel="stylesheet" href="../styles.css">
 
     <style>
-        /* ---------- PREMIUM PAGE HEADER ---------- */
+        /* ---------- PREMIUM PAGE TITLE ---------- */
         .page-title {
             font-size: 38px;
             font-weight: 800;
             margin-bottom: 20px;
-            background: linear-gradient(90deg, #b784ff, #6ea8ff);
+            background: linear-gradient(90deg, #7c3aed, #5b21b6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        /* ---------- FILE UPLOAD PREMIUM ---------- */
-        .file-input-wrapper {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-        }
-
+        /* ---------- FILE INPUT PREMIUM ---------- */
         input[type="file"] {
             padding: 14px;
-            background: rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.7);
             border-radius: 14px;
-            border: 1px solid rgba(255,255,255,0.12);
-            backdrop-filter: blur(12px);
+            border: 1px solid #e5e7eb;
             width: 100%;
             max-width: 600px;
-            color: #ddd;
             cursor: pointer;
             transition: 0.25s;
         }
 
         input[type="file"]:hover {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,1);
             transform: translateY(-2px);
         }
 
-        /* ---------- AI RESULT CARD ---------- */
-        .premium-output {
-            background: rgba(255,255,255,0.07);
-            border-radius: 22px;
-            padding: 32px;
+        /* ---------- PREMIUM SUMMARY CARD (Same theme as Explain Topic) ---------- */
+        .summary-card {
+            background: #ffffff;
+            padding: 30px;
             margin-top: 25px;
-            backdrop-filter: blur(14px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-            color: #e5e5ff;
-            line-height: 1.8;
+            border-radius: 18px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            border-left: 6px solid #7c3aed;
             font-size: 17px;
-            border: 1px solid rgba(255,255,255,0.12);
-            position: relative;
-            animation: fadeInSlide 0.7s ease forwards;
-            white-space: pre-wrap;
+            line-height: 1.7;
+            color: #333;
+            animation: fadeIn 0.5s ease-out forwards;
+            white-space: normal;
+            overflow-wrap: break-word;
         }
 
-        /* Notion-style left colored stripe */
-        .premium-output::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 6px;
-            height: 100%;
-            background: linear-gradient(180deg, #8b5cff, #4278ff, #0ff);
-            border-radius: 6px 0 0 6px;
+        /* Section heading */
+        .summary-card h3 {
+            color: #4c1d95;
+            font-size: 22px;
+            font-weight: 700;
+            margin-top: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        /* AI tag */
-        .premium-output::after {
-            content: "✨ AI Generated Summary";
-            position: absolute;
-            top: -14px;
-            left: 20px;
-            padding: 4px 12px;
-            background: linear-gradient(135deg, #7a5cff, #3b7bff);
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        /* Icon for headings */
+        .summary-card h3::before {
+            content: "🔷";
+            font-size: 22px;
         }
 
-        /* Fade-in animation */
-        @keyframes fadeInSlide {
-            from { opacity: 0; transform: translateY(16px); }
+        /* Bullet points */
+        .summary-card ul {
+            padding-left: 25px;
+            margin-top: 10px;
+        }
+
+        .summary-card li {
+            margin-bottom: 8px;
+            color: #444;
+        }
+
+        /* Fade-in Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
@@ -108,12 +100,10 @@
 </div>
 
 <div class="container">
-    
+
     <h2 class="page-title">Summarize PDF</h2>
 
-    <div class="file-input-wrapper">
-        <input type="file" id="pdfFile" accept="application/pdf">
-    </div>
+    <input type="file" id="pdfFile" accept="application/pdf">
 
     <button class="btn" onclick="summarizePDF()">Summarize</button>
 
@@ -121,11 +111,34 @@
 
     <h3 style="margin-top: 30px;">Result</h3>
 
-    <!-- PREMIUM RESULT CARD -->
-    <div id="result" class="premium-output"></div>
+    <div id="result" class="summary-card"></div>
 
 </div>
 
 <script src="../app.js"></script>
+
+<script>
+    // Convert plain AI summary to premium HTML
+    function convertSummaryToHTML(text) {
+
+        // Convert headings (### or **title**)
+        text = text.replace(/^\s*(###|\*\*)(.*?)(\*\*)?$/gm, "<h3>$2</h3>");
+
+        // Convert bullet points (*, -, +)
+        text = text.replace(/^\s*[\*\-\+]\s+(.*)$/gm, "<li>$1</li>");
+
+        // Wrap bullets inside <ul>
+        text = text.replace(/(<li>[\s\S]*?<\/li>)/g, "<ul>$1</ul>");
+
+        return text;
+    }
+
+    // Override default output renderer
+    function updateSummaryResult(summary) {
+        const out = document.getElementById("result");
+        out.innerHTML = convertSummaryToHTML(summary);
+    }
+</script>
+
 </body>
 </html>
