@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate MCQs</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<button class="menu-btn" onclick="toggleSidebar()">☰</button>
+
+<div class="sidebar" id="sidebar">
+    <a href="../index.html">🏠 Home</a>
+    <a href="summarize.html">📄 Summarize PDF</a>
+    <a href="make-notes.html">📝 Make Notes</a>
+    <a href="mcq.html">❓ Make MCQs</a>
+    <a href="explain.html">💡 Explain Topic</a>
+    <a href="qna.html">💬 QnA</a>
+    <a href="notes.html">📚 Notes History</a>
+    <a href="#" onclick="toggleTheme(); return false;">🌙 Toggle Dark Mode</a>
+</div>
+
+<div class="container">
+    <h2>Generate MCQs</h2>
+
+    <textarea id="mcqInput" rows="8" placeholder="Enter text to create MCQs..."></textarea>
+
+    <button class="btn" onclick="makeMCQ()">Generate MCQs</button>
+    <button class="btn" onclick="copyText('mcqOutput')">Copy</button>
+    <button class="btn" onclick="downloadAsPDF('mcqOutput')">Download as PDF</button>
+
+    <div id="loader" class="loader"></div>
+
+    <h3>MCQs</h3>
+    <pre id="mcqOutput"></pre>
+</div>
+
+<script src="../app.js"></script>
+</body>
+</html>

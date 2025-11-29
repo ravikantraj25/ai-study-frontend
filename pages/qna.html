@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QnA from Text</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<button class="menu-btn" onclick="toggleSidebar()">☰</button>
+
+<div class="sidebar" id="sidebar">
+    <a href="../index.html">🏠 Home</a>
+    <a href="summarize.html">📄 Summarize PDF</a>
+    <a href="make-notes.html">📝 Make Notes</a>
+    <a href="mcq.html">❓ Make MCQs</a>
+    <a href="explain.html">💡 Explain Topic</a>
+    <a href="qna.html">💬 QnA</a>
+    <a href="notes.html">📚 Notes History</a>
+    <a href="#" onclick="toggleTheme(); return false;">🌙 Toggle Dark Mode</a>
+</div>
+
+<div class="container">
+    <h2>QnA from Study Text</h2>
+
+    <p>Paste text from your PDF or notes below:</p>
+    <textarea id="textInput" rows="6" placeholder="Paste extracted text here..."></textarea>
+
+    <h3>Chat</h3>
+    <div id="chatBox" class="chat-box"></div>
+
+    <textarea id="questionInput" rows="3" placeholder="Ask a question..."></textarea>
+
+    <button class="btn" onclick="askChat()">Ask</button>
+
+    <div id="loader" class="loader"></div>
+
+</div>
+
+<script src="../app.js"></script>
+</body>
+</html>

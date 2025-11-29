@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Make Notes</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<button class="menu-btn" onclick="toggleSidebar()">☰</button>
+
+<div class="sidebar" id="sidebar">
+    <a href="../index.html">🏠 Home</a>
+    <a href="summarize.html">📄 Summarize PDF</a>
+    <a href="make-notes.html">📝 Make Notes</a>
+    <a href="mcq.html">❓ Make MCQs</a>
+    <a href="explain.html">💡 Explain Topic</a>
+    <a href="qna.html">💬 QnA</a>
+    <a href="notes.html">📚 Notes History</a>
+    <a href="#" onclick="toggleTheme(); return false;">🌙 Toggle Dark Mode</a>
+</div>
+
+<div class="container">
+    <h2>Generate Bullet Notes</h2>
+
+    <textarea id="notesInput" rows="8" placeholder="Enter your text here..."></textarea>
+
+    <button class="btn" onclick="makeNotes()">Generate Notes</button>
+    <button class="btn" onclick="copyText('notesOutput')">Copy</button>
+    <button class="btn" onclick="downloadAsPDF('notesOutput')">Download as PDF</button>
+
+    <div id="loader" class="loader"></div>
+
+    <h3>Notes</h3>
+    <pre id="notesOutput"></pre>
+</div>
+
+<script src="../app.js"></script>
+</body>
+</html>

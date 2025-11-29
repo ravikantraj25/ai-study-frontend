@@ -1,0 +1,867 @@
+/* =========================================================
+   AI STUDY ASSISTANT – PURPLE SAPPHIRE THEME (v5)
+   Notion x Linear x Superhuman inspired
+   ========================================================= */
+
+/* ---------- Global ---------- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #0f172a;
+    background: radial-gradient(circle at top left, #fdf2ff 0, #f9f5ff 40%, #eef2ff 100%);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Dark theme base */
+body.dark {
+    background: radial-gradient(circle at top left, #020617 0, #020617 40%, #030712 100%);
+    color: #e5e7eb;
+}
+
+/* ---------- Layout / Container ---------- */
+.container {
+    margin-left: 260px;
+    padding: 32px;
+    max-width: 1040px;
+    transition: margin-left 0.3s ease, padding 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .container {
+        margin-left: 12px;
+        padding: 70px 16px 24px;
+    }
+}
+
+/* Soft card background for pages */
+.container > h1,
+.container > h2,
+.container > h3 {
+    margin-top: 0;
+}
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 100vh;
+    padding: 22px 0 24px;
+    background: rgba(255, 255, 255, 0.96);
+    border-right: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow:
+        0 8px 20px rgba(15, 23, 42, 0.06),
+        6px 0 26px rgba(109, 40, 217, 0.04);
+    z-index: 100;
+    transition: left 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sidebar a {
+    display: block;
+    margin: 4px 14px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    color: #111827;
+    transition: background 0.18s ease, color 0.18s ease, transform 0.15s ease;
+}
+
+.sidebar a:hover {
+    background: linear-gradient(135deg, #ede9fe, #f5f3ff);
+    color: #6d28d9;
+    transform: translateX(3px);
+}
+
+/* Sidebar in dark mode */
+body.dark .sidebar {
+    background: rgba(15, 23, 42, 0.98);
+    border-right-color: #1e293b;
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.75),
+        6px 0 30px rgba(88, 28, 135, 0.45);
+}
+
+body.dark .sidebar a {
+    color: #e5e7eb;
+}
+
+body.dark .sidebar a:hover {
+    background: radial-gradient(circle at top left, #4c1d95, #1f2937);
+    color: #e9d5ff;
+}
+
+/* Mobile toggle button */
+.menu-btn {
+    display: none;
+    position: fixed;
+    left: 12px;
+    top: 12px;
+    z-index: 200;
+    border: none;
+    border-radius: 999px;
+    padding: 8px 12px;
+    background: #6d28d9;
+    color: #f9fafb;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 12px 26px rgba(76, 29, 149, 0.4);
+}
+
+body.dark .menu-btn {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        left: -260px;
+    }
+    .sidebar.open {
+        left: 0;
+    }
+    .menu-btn {
+        display: block;
+    }
+}
+
+/* =========================================================
+   INPUTS / TEXTAREAS / FILES
+   ========================================================= */
+textarea,
+input[type="file"],
+input[type="text"] {
+    width: 100%;
+    margin: 12px 0;
+    padding: 13px 16px;
+    border-radius: 14px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    font-size: 15px;
+    line-height: 1.6;
+    outline: none;
+    box-shadow:
+        inset 0 1px 3px rgba(148, 163, 184, 0.2),
+        0 8px 20px rgba(15, 23, 42, 0.03);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+textarea:focus,
+input[type="file"]:focus,
+input[type="text"]:focus {
+    border-color: #8b5cf6;
+    box-shadow:
+        0 0 0 3px rgba(139, 92, 246, 0.18),
+        0 10px 24px rgba(88, 28, 135, 0.16);
+}
+
+/* Dark mode inputs */
+body.dark textarea,
+body.dark input[type="file"],
+body.dark input[type="text"] {
+    background: #020617;
+    border-color: #1f2937;
+    color: #e5e7eb;
+    box-shadow:
+        inset 0 1px 3px rgba(15, 23, 42, 0.9),
+        0 10px 26px rgba(0, 0, 0, 0.8);
+}
+
+body.dark textarea:focus,
+body.dark input[type="file"]:focus,
+body.dark input[type="text"]:focus {
+    border-color: #a855f7;
+    box-shadow:
+        0 0 0 3px rgba(168, 85, 247, 0.28),
+        0 12px 30px rgba(76, 29, 149, 0.85);
+}
+
+/* =========================================================
+   BUTTONS – PURPLE SAPPHIRE
+   ========================================================= */
+.btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 11px 22px;
+    margin: 8px 6px 0 0;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: #f9fafb;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow:
+        0 10px 24px rgba(124, 58, 237, 0.35),
+        0 0 0 1px rgba(255, 255, 255, 0.4) inset;
+    transition: transform 0.18s ease, box-shadow 0.2s ease, filter 0.1s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 14px 32px rgba(109, 40, 217, 0.45),
+        0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+    filter: brightness(1.02);
+}
+
+.btn:active {
+    transform: scale(0.97);
+    box-shadow:
+        0 8px 20px rgba(88, 28, 135, 0.45),
+        0 0 0 1px rgba(243, 244, 246, 0.5) inset;
+}
+
+/* Ripple effect */
+.btn::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    left: var(--x);
+    top: var(--y);
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(0);
+    opacity: 0.9;
+    pointer-events: none;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.btn.ripple::after {
+    transform: scale(12);
+    opacity: 0;
+}
+
+/* Dark mode buttons */
+body.dark .btn {
+    background: linear-gradient(135deg, #a855f7, #7c3aed);
+    box-shadow:
+        0 12px 30px rgba(15, 23, 42, 0.9),
+        0 0 0 1px rgba(148, 163, 184, 0.3) inset;
+}
+
+/* =========================================================
+   LOADER
+   ========================================================= */
+.loader {
+    width: 44px;
+    height: 44px;
+    margin: 22px auto;
+    border-radius: 999px;
+    border: 4px solid rgba(209, 213, 219, 0.8);
+    border-top-color: #8b5cf6;
+    animation: spin 0.75s linear infinite;
+    display: none;
+}
+
+body.dark .loader {
+    border-color: #1f2937;
+    border-top-color: #a855f7;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* =========================================================
+   CHAT BOX
+   ========================================================= */
+.chat-box {
+    height: 320px;
+    padding: 12px;
+    border-radius: 18px;
+    border: 1px solid #e5e7eb;
+    background: rgba(255,255,255,0.96);
+    box-shadow:
+        0 10px 28px rgba(15,23,42,0.08),
+        0 0 0 1px rgba(255,255,255,0.8) inset;
+    overflow-y: auto;
+}
+
+body.dark .chat-box {
+    background: rgba(15, 23, 42, 0.97);
+    border-color: #1f2937;
+    box-shadow:
+        0 12px 36px rgba(0,0,0,0.9),
+        0 0 0 1px rgba(30,64,175,0.4) inset;
+}
+
+/* Messages */
+.msg {
+    max-width: 80%;
+    margin: 6px 0;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.msg.user {
+    margin-left: auto;
+    text-align: right;
+    background: linear-gradient(135deg, #a855f7, #7c3aed);
+    color: #f9fafb;
+    box-shadow: 0 10px 24px rgba(109, 40, 217, 0.55);
+}
+
+.msg.bot {
+    background: #f5f3ff;
+    color: #111827;
+}
+
+body.dark .msg.bot {
+    background: #111827;
+    color: #e5e7eb;
+}
+
+/* =========================================================
+   GENERIC PRE (fallback text display)
+   ========================================================= */
+pre {
+    padding: 16px;
+    border-radius: 14px;
+    background: #020617;
+    color: #e5e7eb;
+    font-size: 13px;
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+body.dark pre {
+    background: #020617;
+}
+
+/* =========================================================
+   NOTION-STYLE SUMMARY (Summarize PDF)
+   ========================================================= */
+.notion-box {
+    margin-top: 16px;
+    padding: 26px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow:
+        0 8px 26px rgba(15, 23, 42, 0.08),
+        0 0 0 1px rgba(226, 232, 240, 0.9);
+    line-height: 1.8;
+    font-size: 15px;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Heading classes mapped from JS */
+.nt-h1 {
+    font-size: 24px;
+    font-weight: 800;
+    margin: 8px 0;
+    color: #111827;
+}
+
+.nt-h2 {
+    font-size: 19px;
+    font-weight: 700;
+    margin-top: 18px;
+    margin-bottom: 6px;
+    color: #7c3aed;
+}
+
+.nt-h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    color: #8b5cf6;
+}
+
+.nt-li {
+    margin: 5px 0;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: #f5f3ff;
+    border-left: 3px solid #7c3aed;
+    font-size: 14px;
+}
+
+.nt-bold {
+    font-weight: 700;
+    color: #111827;
+}
+
+body.dark .notion-box {
+    background: #020617;
+    box-shadow:
+        0 14px 40px rgba(0, 0, 0, 0.9),
+        0 0 0 1px rgba(55, 65, 81, 0.9);
+}
+
+body.dark .nt-h1,
+body.dark .nt-h2,
+body.dark .nt-h3,
+body.dark .nt-li {
+    color: #e5e7eb;
+}
+
+/* =========================================================
+   NOTES PAGE – PREMIUM SECTION CARDS
+   ========================================================= */
+#notesOutput {
+    padding: 0;
+    background: transparent;
+    white-space: normal;
+}
+
+.notes-container {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    margin-top: 10px;
+}
+
+/* Header card */
+.notes-header-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 22px 24px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #f3e8ff, #eef2ff);
+    border: 1px solid rgba(216, 180, 254, 0.7);
+    box-shadow:
+        0 6px 16px rgba(109, 40, 217, 0.18),
+        0 16px 32px rgba(15, 23, 42, 0.06);
+}
+
+.notes-header-card h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: #4c1d95;
+}
+
+.notes-header-card p {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: #4b5563;
+}
+
+/* Each section card */
+.note-section-card {
+    padding: 22px 24px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow:
+        0 6px 16px rgba(15, 23, 42, 0.06),
+        0 20px 40px rgba(15, 23, 42, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    animation: fadeIn 0.35s ease;
+}
+
+.note-section-card:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 10px 26px rgba(15, 23, 42, 0.08),
+        0 24px 50px rgba(15, 23, 42, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.note-section-card h3 {
+    margin: 0 0 10px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.note-section-card ul {
+    margin: 0;
+    padding-left: 22px;
+}
+
+.note-section-card li {
+    margin: 6px 0;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #374151;
+}
+
+/* Dark mode */
+body.dark .notes-header-card {
+    background: linear-gradient(135deg, #1e1b4b, #020617);
+    border-color: #4c1d95;
+    box-shadow:
+        0 12px 34px rgba(0, 0, 0, 0.85),
+        0 0 0 1px rgba(76, 29, 149, 0.55);
+}
+
+body.dark .notes-header-card h2,
+body.dark .notes-header-card p {
+    color: #e9d5ff;
+}
+
+body.dark .note-section-card {
+    background: #020617;
+    border-color: #1f2937;
+    box-shadow:
+        0 14px 40px rgba(0, 0, 0, 0.9),
+        0 0 0 1px rgba(55, 65, 81, 0.9);
+}
+
+body.dark .note-section-card h3,
+body.dark .note-section-card li {
+    color: #e5e7eb;
+}
+
+/* =========================================================
+   EXPLAIN TOPIC – PREMIUM CARDS
+   ========================================================= */
+#explainOutput {
+    padding: 0;
+    background: transparent;
+    white-space: normal;
+}
+
+/* Top header */
+.explain-ai-card {
+    padding: 18px 22px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #ede9fe, #f5f3ff);
+    border: 1px solid rgba(196, 181, 253, 0.8);
+    box-shadow:
+        0 8px 24px rgba(124, 58, 237, 0.18),
+        0 10px 30px rgba(15, 23, 42, 0.05);
+    margin-bottom: 16px;
+}
+
+.explain-ai-card h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #4c1d95;
+}
+
+.explain-ai-card p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #4b5563;
+}
+
+/* Section cards */
+.explain-section-card {
+    padding: 18px 20px;
+    border-radius: 18px;
+    margin-bottom: 12px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow:
+        0 6px 18px rgba(15, 23, 42, 0.06),
+        0 18px 34px rgba(15, 23, 42, 0.04);
+}
+
+.explain-section-card h3 {
+    margin: 0 0 8px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.explain-section-card p {
+    margin: 0 0 6px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #374151;
+}
+
+.explain-section-card ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.explain-section-card li {
+    margin: 4px 0;
+    font-size: 14px;
+    color: #4b5563;
+}
+
+/* Dark mode */
+body.dark .explain-ai-card {
+    background: linear-gradient(135deg, #1e1b4b, #020617);
+    border-color: #4c1d95;
+    box-shadow:
+        0 12px 34px rgba(0, 0, 0, 0.95),
+        0 0 0 1px rgba(76, 29, 149, 0.85);
+}
+
+body.dark .explain-ai-card h2,
+body.dark .explain-ai-card p {
+    color: #e9d5ff;
+}
+
+body.dark .explain-section-card {
+    background: #020617;
+    border-color: #1f2937;
+    box-shadow:
+        0 14px 40px rgba(0, 0, 0, 0.9),
+        0 0 0 1px rgba(55, 65, 81, 0.8);
+}
+
+body.dark .explain-section-card h3,
+body.dark .explain-section-card p,
+body.dark .explain-section-card li {
+    color: #e5e7eb;
+}
+
+/* =========================================================
+   MCQ PAGE
+   ========================================================= */
+.mcq-container {
+    margin-top: 18px;
+    padding: 22px 24px;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow:
+        0 8px 24px rgba(15, 23, 42, 0.06),
+        0 18px 40px rgba(15, 23, 42, 0.04);
+}
+
+.mcq-header {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #4c1d95;
+}
+
+.mcq-question {
+    margin-top: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #7c3aed;
+}
+
+.mcq-options {
+    margin: 4px 0 0 22px;
+    padding: 0;
+    list-style: upper-alpha;
+}
+
+.mcq-options li {
+    margin-bottom: 3px;
+    font-size: 14px;
+    color: #374151;
+}
+
+.mcq-correct {
+    margin-top: 8px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    background: #ecfdf5;
+    border-left: 4px solid #22c55e;
+    font-size: 14px;
+    font-weight: 600;
+    color: #166534;
+}
+
+/* Dark mode MCQ */
+body.dark .mcq-container {
+    background: #020617;
+    box-shadow:
+        0 14px 40px rgba(0, 0, 0, 0.9),
+        0 0 0 1px rgba(55, 65, 81, 0.8);
+}
+
+body.dark .mcq-question {
+    color: #e9d5ff;
+}
+
+body.dark .mcq-options li {
+    color: #e5e7eb;
+}
+
+body.dark .mcq-correct {
+    background: #052e16;
+    color: #bbf7d0;
+}
+
+/* =========================================================
+   NOTES HISTORY CARD (saved notes list)
+   ========================================================= */
+.note-card {
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow:
+        0 6px 16px rgba(15, 23, 42, 0.05),
+        0 16px 32px rgba(15, 23, 42, 0.03);
+}
+
+.note-card h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.note-card p {
+    margin: 0;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+body.dark .note-card {
+    background: #020617;
+    border-color: #1f2937;
+    box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.95),
+        0 0 0 1px rgba(51, 65, 85, 0.85);
+}
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* ---------- Premium Notes UI ---------- */
+.notes-container {
+    padding: 20px;
+}
+
+.notes-header-card {
+    background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+    padding: 25px;
+    border-radius: 18px;
+    color: #2d2d2d;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.notes-header-card h2 {
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.note-section-card {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+    transition: 0.2s ease;
+}
+
+.note-section-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+}
+
+.note-section-card h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #4b0082;
+    margin-bottom: 15px;
+}
+
+/* Custom premium bullets */
+.note-section-card ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.note-section-card ul li {
+    display: flex;
+    align-items: start;
+    margin-bottom: 12px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* Bullet icon */
+.note-section-card ul li::before {
+    content: "🟣";
+    font-size: 10px;
+    margin-right: 10px;
+    margin-top: 6px;
+}
+/* 🌟 Premium Explanation Wrapper */
+.explain-wrapper {
+    padding: 20px;
+}
+
+/* Big header card */
+.explain-header-card {
+    background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+    padding: 25px;
+    border-radius: 18px;
+    color: #2d2d2d;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.08);
+    margin-bottom: 25px;
+    text-align:left;
+}
+
+/* Section blocks */
+.explain-section {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+    transition: 0.2s ease;
+}
+
+.explain-section:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.explain-section h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #5a00c2;
+    margin-bottom: 15px;
+}
+
+/* Premium bullet style */
+.explain-section ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.explain-section ul li {
+    display: flex;
+    align-items: start;
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #333;
+    line-height: 1.6;
+}
+
+.explain-section ul li::before {
+    content: "✨";
+    font-size: 14px;
+    margin-right: 10px;
+    margin-top: 3px;
+}

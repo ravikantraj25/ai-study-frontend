@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Explain Topic</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<button class="menu-btn" onclick="toggleSidebar()">☰</button>
+
+<div class="sidebar" id="sidebar">
+    <a href="../index.html">🏠 Home</a>
+    <a href="summarize.html">📄 Summarize PDF</a>
+    <a href="make-notes.html">📝 Make Notes</a>
+    <a href="mcq.html">❓ Make MCQs</a>
+    <a href="explain.html">💡 Explain Topic</a>
+    <a href="qna.html">💬 QnA</a>
+    <a href="notes.html">📚 Notes History</a>
+    <a href="#" onclick="toggleTheme(); return false;">🌙 Toggle Dark Mode</a>
+</div>
+
+<div class="container">
+    <h2>Explain Any Topic</h2>
+
+    <textarea id="explainInput" rows="5" placeholder="Enter topic or question"></textarea>
+
+    <button class="btn" onclick="explainTopic()">Explain</button>
+    <button class="btn" onclick="copyText('explanationOutput')">Copy</button>
+    <button class="btn" onclick="downloadAsPDF('explanationOutput')">Download as PDF</button>
+
+    <div id="loader" class="loader"></div>
+
+    <!-- ⬇️ NEW PREMIUM EXPLANATION CONTAINER -->
+    <h3>Explanation</h3>
+    <div id="explanationOutput" class="explain-wrapper"></div>
+</div>
+
+<script src="../app.js"></script>
+</body>
+</html>
