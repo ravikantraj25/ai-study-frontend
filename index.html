@@ -17,6 +17,62 @@ body {
     overflow-x: hidden;
 }
 
+/* ---------- NAVBAR ---------- */
+.navbar {
+    width: 100%;
+    padding: 22px 40px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    backdrop-filter: blur(14px);
+    background: rgba(15,15,23,0.65);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.navbar .logo {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #fff;
+}
+
+.navbar .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+}
+
+.navbar a {
+    color: #bdbdbd;
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.25s;
+}
+
+.navbar a:hover {
+    color: #fff;
+}
+
+.btn-small {
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #7b00ff, #008fff);
+    color: #fff;
+    cursor: pointer;
+    transition: 0.25s;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.btn-small:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,140,255,0.4);
+}
+
 /* ---------- ANIMATION KEYFRAMES ---------- */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(40px); }
@@ -26,11 +82,6 @@ body {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-25px); }
   100% { transform: translateY(0px); }
-}
-@keyframes softGlow {
-  0% { opacity: 0.4; }
-  50% { opacity: 0.7; }
-  100% { opacity: 0.4; }
 }
 
 /* ---------- BACKGROUND ORBS ---------- */
@@ -48,7 +99,7 @@ body {
 
 /* ---------- HERO SECTION ---------- */
 .hero {
-    padding: 140px 20px 130px;
+    padding: 200px 20px 130px;
     text-align: center;
     animation: fadeUp 1s ease-out forwards;
 }
@@ -112,7 +163,7 @@ body {
     gap: 32px;
 }
 
-/* ---------- FEATURE CARD (Glass + 3D Tilt) ---------- */
+/* ---------- FEATURE CARD ---------- */
 .card {
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.1);
@@ -134,7 +185,6 @@ body {
 .card .icon {
     font-size: 44px;
     margin-bottom: 12px;
-    filter: drop-shadow(0px 0px 12px rgba(255,255,255,0.4));
 }
 
 .card h3 {
@@ -147,17 +197,6 @@ body {
     opacity: 0.8;
     font-size: 15px;
     line-height: 1.7;
-}
-
-/* ---------- REVEAL ANIMATIONS ---------- */
-.reveal {
-    opacity: 0;
-    transform: translateY(40px);
-    transition: 0.7s ease;
-}
-.reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
 }
 
 /* ---------- FOOTER ---------- */
@@ -173,10 +212,25 @@ footer {
 
 <body>
 
-<!-- ANIMATED BACKGROUND ORBS -->
+<!-- NAVBAR -->
+<header class="navbar">
+    <div class="logo">AI Study</div>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="pages/summarize.html">Tools</a>
+
+        <a id="nav-login" href="pages/login.html">Login</a>
+        <a id="nav-register" href="pages/register.html">Register</a>
+        <a id="nav-profile" href="pages/profile.html" style="display:none;">Profile</a>
+
+        <button id="nav-logout" class="btn-small" style="display:none;">Logout</button>
+    </div>
+</header>
+
+<!-- ANIMATED BACKGROUND -->
 <div class="glow glow1"></div>
 <div class="glow glow2"></div>
-<div class="glow glow3"></div>
+div class="glow glow3"></div>
 
 <!-- HERO -->
 <section class="hero">
@@ -191,40 +245,28 @@ footer {
 
     <div class="grid">
 
-        <div class="card reveal" onclick="location.href='pages/summarize.html'">
+        <div class="card" onclick="location.href='pages/summarize.html'">
             <div class="icon">📄</div>
             <h3>Summarize PDFs</h3>
             <p>Get crystal-clear summaries from full textbooks or class PDFs.</p>
         </div>
 
-        <div class="card reveal" onclick="location.href='pages/make-notes.html'">
+        <div class="card" onclick="location.href='pages/make-notes.html'">
             <div class="icon">📝</div>
             <h3>Make Notes</h3>
-            <p>Convert long text into clean, structured exam-ready notes.</p>
+            <p>Convert long text into clean, structured notes.</p>
         </div>
 
-        <div class="card reveal" onclick="location.href='pages/mcq.html'">
+        <div class="card" onclick="location.href='pages/mcq.html'">
             <div class="icon">❓</div>
             <h3>MCQ Generator</h3>
-            <p>Create intelligent MCQs with correct answers instantly.</p>
+            <p>Create intelligent MCQs instantly.</p>
         </div>
 
-        <div class="card reveal" onclick="location.href='pages/explain.html'">
+        <div class="card" onclick="location.href='pages/explain.html'">
             <div class="icon">💡</div>
             <h3>Explain Topic</h3>
-            <p>Teacher-style explanation with examples, points & FAQs.</p>
-        </div>
-
-        <div class="card reveal" onclick="location.href='pages/qna.html'">
-            <div class="icon">💬</div>
-            <h3>Ask Questions</h3>
-            <p>Ask doubts directly from your notes or PDFs.</p>
-        </div>
-
-        <div class="card reveal" onclick="location.href='pages/notes.html'">
-            <div class="icon">📚</div>
-            <h3>Your Notes History</h3>
-            <p>All your generated notes stored neatly in one place.</p>
+            <p>Teacher-style explanation with examples.</p>
         </div>
 
     </div>
@@ -235,34 +277,19 @@ footer {
 </footer>
 
 <script>
-/* ---------- REVEAL ON SCROLL ---------- */
-const reveals = document.querySelectorAll(".reveal");
+// ---------- NAVBAR AUTH LOGIC ----------
+const token = localStorage.getItem("ai_study_token");
 
-function revealOnScroll() {
-    for (let i = 0; i < reveals.length; i++) {
-        const windowHeight = window.innerHeight;
-        const elementTop = reveals[i].getBoundingClientRect().top;
-
-        if (elementTop < windowHeight - 80) {
-            reveals[i].classList.add("visible");
-        }
-    }
+if (token) {
+    document.getElementById("nav-login").style.display = "none";
+    document.getElementById("nav-register").style.display = "none";
+    document.getElementById("nav-profile").style.display = "block";
+    document.getElementById("nav-logout").style.display = "inline-block";
 }
-window.addEventListener("scroll", revealOnScroll);
-revealOnScroll();
 
-/* ---------- 3D Tilt Effect on Cards ---------- */
-document.querySelectorAll(".card").forEach(card => {
-    card.addEventListener("mousemove", e => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left - rect.width/2;
-        const y = e.clientY - rect.top - rect.height/2;
-        card.style.transform = `rotateX(${(-y/20)}deg) rotateY(${(x/20)}deg) scale(1.05)`;
-    });
-
-    card.addEventListener("mouseleave", () => {
-        card.style.transform = "rotateX(0deg) rotateY(0deg) scale(1)";
-    });
+document.getElementById("nav-logout")?.addEventListener("click", () => {
+    localStorage.removeItem("ai_study_token");
+    location.reload();
 });
 </script>
 
