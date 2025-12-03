@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Register — AI Study</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body class="fade-in">
+
+  <!-- header (same look as index) -->
+  <header class="navbar container">
+    <div class="logo">AI Study</div>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="login.html">Login</a>
+      <button class="theme-toggle">Toggle</button>
+    </nav>
+  </header>
+
+  <!-- sidebar (same as index) -->
+  <aside class="sidebar fade-in">
+    <a class="nav-item" href="index.html">Home</a>
+    <a class="nav-item" href="summarize.html">Summarize PDF</a>
+    <a class="nav-item" href="explain.html">Explain</a>
+    <a class="nav-item" href="notes.html">Make Notes</a>
+    <a class="nav-item" href="mcq.html">Make MCQ</a>
+    <a class="nav-item" href="qna.html">QnA</a>
+    <div class="spacer"></div>
+    <a class="nav-item" href="register.html">Register</a>
+    <a class="nav-item" href="login.html">Login</a>
+  </aside>
+
+  <!-- page content: exact index design (glass card centered inside container) -->
+  <main class="page-content">
+    <div class="container">
+      <section class="explain-header-card">
+        <h2>Create an account</h2>
+        <p style="margin-top:8px;color:var(--muted)">Sign up to save notes, view history and use protected API features.</p>
+      </section>
+
+      <div class="note-section-card" style="max-width:720px;margin:0 auto;">
+        <label for="reg-name">Full name</label>
+        <input id="reg-name" type="text" placeholder="Your full name">
+
+        <label for="reg-email">Email</label>
+        <input id="reg-email" type="email" placeholder="you@example.com">
+
+        <label for="reg-password">Password</label>
+        <input id="reg-password" type="password" placeholder="Choose a secure password">
+
+        <div style="margin-top:14px;display:flex;gap:12px;align-items:center;">
+          <button id="reg-submit" class="btn">Create Account</button>
+          <button id="reg-to-login" class="btn alt">Already have account</button>
+        </div>
+
+        <div id="reg-result" style="margin-top:14px"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

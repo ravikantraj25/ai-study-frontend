@@ -1,469 +1,227 @@
-/* ============================================================
-   PREMIUM AI STUDY APP – CLEAN PRODUCTION VERSION (v5.1)
-   ============================================================ */
+/* app.js
+   Auth handlers + theme + small UI helpers
+   - stores token in localStorage under key: ai_study_token
+   - adapt API_BASE if needed
+*/
 
-const BASE_URL = "https://ai-study-backened.onrender.com";
+const API_BASE = 'https://ai-study-backened.onrender.com'; // <- change if your backend differs
+const TOKEN_KEY = 'ai_study_token';
 
-/* ------------------------------------------------------------
-   SIDEBAR (Mobile + Desktop)
-------------------------------------------------------------- */
-function toggleSidebar() {
-    const sidebar = document.getElementById("sidebar");
-    if (sidebar) sidebar.classList.toggle("open");
+/* ---------- Utilities ---------- */
+function qs(sel, root = document) { return root.querySelector(sel); }
+function qsa(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
+function setMsg(el, text, isError = false) {
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = isError ? '#ff4d6d' : '';
 }
+function go(path) { window.location.href = path; }
 
-/* ------------------------------------------------------------
-   THEME TOGGLE (Dark / Light)
-------------------------------------------------------------- */
+/* ---------- Theme handling (works with your styles.css "body.dark") ---------- */
+function applyTheme() {
+  const saved = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = saved || (prefersDark ? 'dark' : 'light');
+  document.body.classList.toggle('dark', theme === 'dark');
+}
 function toggleTheme() {
-    document.body.classList.toggle("dark");
+  const isDark = document.body.classList.contains('dark');
+  document.body.classList.toggle('dark', !isDark);
+  localStorage.setItem('theme', (!isDark) ? 'dark' : 'light');
 }
 
-/* ------------------------------------------------------------
-   GLOBAL LOADER
-------------------------------------------------------------- */
-function showLoader() {
-    const loader = document.getElementById("loader");
-    if (loader) loader.style.display = "block";
-}
-
-function hideLoader() {
-    const loader = document.getElementById("loader");
-    if (loader) loader.style.display = "none";
-}
-
-/* ------------------------------------------------------------
-   BUTTON RIPPLES (Premium Motion)
-------------------------------------------------------------- */
-document.addEventListener("click", function (e) {
-    if (!e.target.classList.contains("btn")) return;
-
-    const rect = e.target.getBoundingClientRect();
-    e.target.style.setProperty("--x", `${e.clientX - rect.left}px`);
-    e.target.style.setProperty("--y", `${e.clientY - rect.top}px`);
-
-    e.target.classList.add("ripple");
-    setTimeout(() => e.target.classList.remove("ripple"), 400);
+/* wire theme toggle buttons */
+document.addEventListener('click', (ev) => {
+  if (ev.target.matches('.theme-toggle')) toggleTheme();
 });
 
-/* ------------------------------------------------------------
-   COPY TEXT
-------------------------------------------------------------- */
-function copyText(id) {
-    const el = document.getElementById(id);
-    if (!el) {
-        alert("Nothing to copy.");
-        return;
+/* ---------- Auth helpers ---------- */
+function saveToken(token) { localStorage.setItem(TOKEN_KEY, token); }
+function readToken() { return localStorage.getItem(TOKEN_KEY); }
+function clearToken() { localStorage.removeItem(TOKEN_KEY); }
+
+/* wrapper for JSON POST */
+async function postJSON(path, body = {}, token = null) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(API_BASE + path, { method: 'POST', headers, body: JSON.stringify(body) });
+  const json = await res.json().catch(()=>({}));
+  if (!res.ok) throw new Error(json.message || `Error ${res.status}`);
+  return json;
+}
+
+/* wrapper for GET */
+async function getJSON(path, token = null) {
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(API_BASE + path, { method: 'GET', headers });
+  const json = await res.json().catch(()=>({}));
+  if (!res.ok) throw new Error(json.message || `Error ${res.status}`);
+  return json;
+}
+
+/* wrapper for PUT */
+async function putJSON(path, body = {}, token = null) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(API_BASE + path, { method: 'PUT', headers, body: JSON.stringify(body) });
+  const json = await res.json().catch(()=>({}));
+  if (!res.ok) throw new Error(json.message || `Error ${res.status}`);
+  return json;
+}
+
+/* wrapper for DELETE */
+async function del(path, token = null) {
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(API_BASE + path, { method: 'DELETE', headers });
+  const json = await res.json().catch(()=>({}));
+  if (!res.ok) throw new Error(json.message || `Error ${res.status}`);
+  return json;
+}
+
+/* ---------- Page hooks ---------- */
+
+/* Register page */
+function hookRegister() {
+  const btn = qs('#reg-submit');
+  if (!btn) return;
+  const nameEl = qs('#reg-name'), emailEl = qs('#reg-email'), passEl = qs('#reg-password'), out = qs('#reg-result');
+
+  qs('#reg-to-login')?.addEventListener('click', ()=> go('login.html'));
+
+  btn.addEventListener('click', async () => {
+    setMsg(out, '');
+    const name = nameEl.value.trim(), email = emailEl.value.trim(), password = passEl.value;
+    if (!name || !email || !password) { setMsg(out, 'Please fill all fields', true); return; }
+    btn.disabled = true; btn.textContent = 'Creating...';
+    try {
+      const res = await postJSON('/auth/register', { name, email, password });
+      if (res.token) { saveToken(res.token); setMsg(out, 'Registered & logged in ✅'); setTimeout(()=> go('profile.html'), 900); }
+      else { setMsg(out, res.message || 'Registered. Please login.'); setTimeout(()=> go('login.html'), 900); }
+    } catch (err) { setMsg(out, err.message || 'Registration failed', true); }
+    finally { btn.disabled = false; btn.textContent = 'Create Account'; }
+  });
+}
+
+/* Login page */
+function hookLogin() {
+  const btn = qs('#login-submit');
+  if (!btn) return;
+  const emailEl = qs('#login-email'), passEl = qs('#login-password'), out = qs('#login-result');
+
+  qs('#login-to-register')?.addEventListener('click', ()=> go('register.html'));
+
+  btn.addEventListener('click', async () => {
+    setMsg(out, '');
+    const email = emailEl.value.trim(), password = passEl.value;
+    if (!email || !password) { setMsg(out, 'Please enter email and password', true); return; }
+    btn.disabled = true; btn.textContent = 'Logging in...';
+    try {
+      const res = await postJSON('/auth/login', { email, password });
+      if (res.token) {
+        saveToken(res.token);
+        setMsg(out, 'Login successful ✅');
+        setTimeout(()=> go('profile.html'), 700);
+      } else {
+        setMsg(out, res.message || 'Login failed', true);
+      }
+    } catch (err) {
+      setMsg(out, err.message || 'Login failed', true);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Login';
     }
+  });
+}
 
-    const text = el.innerText || el.textContent || "";
-    if (!text.trim()) {
-        alert("Nothing to copy.");
-        return;
+/* Profile page (view + update + logout) */
+function hookProfile() {
+  const info = qs('#profile-info');
+  const upName = qs('#up-name'), upEmail = qs('#up-email'), updateBtn = qs('#update-submit'), out = qs('#update-result'), logout = qs('#logout-btn');
+  if (!info) return;
+
+  (async ()=>{
+    const token = readToken();
+    if (!token) { info.innerHTML = 'Not logged in. <a href="login.html">Login</a>'; return; }
+    try {
+      const u = await getJSON('/auth/me', token);
+      info.innerHTML = `<div><strong>${u.name||u.fullname||'User'}</strong> — ${u.email||''}</div>`;
+      upName.value = u.name || '';
+      upEmail.value = u.email || '';
+    } catch (err) {
+      info.textContent = 'Error loading profile: ' + err.message;
     }
+  })();
 
-    navigator.clipboard.writeText(text)
-        .then(() => alert("Copied!"))
-        .catch(() => alert("Copy failed."));
-}
-
-/* ------------------------------------------------------------
-   DOWNLOAD AS PDF (Browser Print)
-------------------------------------------------------------- */
-function downloadAsPDF(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-
-    const content = el.innerText || el.textContent || "";
-    const win = window.open("", "", "width=800,height=600");
-    win.document.write(`<pre>${content}</pre>`);
-    win.document.close();
-    win.print();
-}
-
-/* ============================================================
-   🔵 FEATURE 1 — SUMMARIZE PDF
-============================================================ */
-function summarizePDF() {
-    const fileInput = document.getElementById("pdfFile");
-    const file = fileInput?.files?.[0];
-
-    if (!file) {
-        alert("Please select a PDF file.");
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    showLoader();
-
-    fetch(`${BASE_URL}/summarize`, {
-        method: "POST",
-        body: formData
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (!data || !data.summary) {
-                alert("No summary received from server.");
-                return;
-            }
-            renderSummary(data.summary);
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Something went wrong while summarizing.");
-        })
-        .finally(() => hideLoader());
-}
-
-/* Notion-style summary renderer */
-function renderSummary(text) {
-    const result = document.getElementById("result");
-    if (!result) return;
-
-    if (!text) {
-        result.innerHTML = "<p>No summary generated.</p>";
-        return;
-    }
-
-    let html = text
-        .replace(/\x1b\[[0-9;]*m/g, "") // remove ANSI
-        .replace(/### (.*)/g, `<h3 class="nt-h3">📌 $1</h3>`)
-        .replace(/## (.*)/g, `<h2 class="nt-h2">📘 $1</h2>`)
-        .replace(/# (.*)/g, `<h1 class="nt-h1">🟦 $1</h1>`)
-        .replace(/\*\*(.*?)\*\*/g, `<span class="nt-bold">$1</span>`)
-        .replace(/^- (.*)/gm, `<li class="nt-li">• $1</li>`)
-        .replace(/\n\n/g, "<br>")
-        .replace(/\n/g, "<br>");
-
-    result.innerHTML = `<div class="notion-box">${html}</div>`;
-}
-
-/* ============================================================
-   🔵 FEATURE 2 — MAKE NOTES
-============================================================ */
-function makeNotes() {
-    const textArea = document.getElementById("notesInput");
-    const text = textArea?.value.trim() || "";
-
-    if (!text) {
-        alert("Please enter some text.");
-        return;
-    }
-
-    showLoader();
-
-    fetch(`${BASE_URL}/make-notes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text })
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (!data || !data.notes || !Array.isArray(data.notes)) {
-                alert("Invalid notes received from server.");
-                return;
-            }
-            renderNotes(data.notes);
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Error generating notes.");
-        })
-        .finally(() => hideLoader());
-}
-
-
-/* Build notes into premium cards */
-/* Build notes into premium cards */
-function renderNotes(notesArray) {
-    const out = document.getElementById("notesOutput");
-    if (!out) return;
-
-    let html = `
-        <div class="notes-header-card">
-            <h2>📝 Premium Bullet Notes</h2>
-            <p>Clean, structured notes generated from your text.</p>
-        </div>
-
-        <div class="note-section-card">
-            <h3>Notes</h3>
-            <ul>
-                ${notesArray.map(n => `<li>${n}</li>`).join("")}
-            </ul>
-        </div>
-    `;
-
-    out.innerHTML = `<div class="notes-container">${html}</div>`;
-}
-
-
-
-/* ============================================================
-   🔵 FEATURE 3 — EXPLAIN TOPIC (JSON FROM BACKEND)
-============================================================ */
-function explainTopic() {
-    const input = document.getElementById("explainInput");
-    const topic = input?.value.trim() || "";
-
-    if (!topic) {
-        alert("Please enter a topic.");
-        return;
-    }
-
-    showLoader();
-
-    fetch(`${BASE_URL}/explain`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic })
-    })
-        .then(res => res.json())
-        .then(data => {
-            const out = document.getElementById("explanationOutput"); // FIXED ID
-            if (!out) return;
-
-            if (data.error) {
-                out.innerHTML = `<p style="color:red;">${data.error}</p>`;
-                return;
-            }
-
-            const sections = data.explanation;
-
-            // If backend accidentally returns raw text, display as-is
-            if (!Array.isArray(sections)) {
-                out.innerHTML = `<p>${sections || "No explanation available."}</p>`;
-                return;
-            }
-
-            renderExplanationFromJson(sections);
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Error explaining topic.");
-        })
-        .finally(() => hideLoader());
-}
-
-
-/* ----------------------------------------------------------
-   PREMIUM — Notion/Superhuman Style Explanation Renderer
------------------------------------------------------------- */
-function renderExplanationFromJson(sections) {
-    const out = document.getElementById("explanationOutput");
-    if (!out) return;
-
-    let html = `
-        <div class="explain-header-card">
-            <h2>🔍 Premium Explanation</h2>
-            <p>Beautifully structured explanation based on your topic.</p>
-        </div>
-    `;
-
-    sections.forEach(sec => {
-        const title = sec.title || "Section";
-        const paragraph = sec.paragraph || "";
-        const bullets = Array.isArray(sec.bullets) ? sec.bullets : [];
-        const examples = Array.isArray(sec.examples) ? sec.examples : [];
-        const terms = Array.isArray(sec.important_terms) ? sec.important_terms : [];
-        const faqs = Array.isArray(sec.faqs) ? sec.faqs : [];
-
-        html += `
-            <div class="explain-section">
-                <h3>📘 ${title}</h3>
-
-                ${paragraph ? `<p>${paragraph}</p>` : ""}
-
-                ${bullets.length ? `
-                    <h4>🔹 Key Points</h4>
-                    <ul>${bullets.map(b => `<li>${b}</li>`).join("")}</ul>
-                ` : ""}
-
-                ${examples.length ? `
-                    <h4>🌿 Examples</h4>
-                    <ul>${examples.map(e => `<li>${e}</li>`).join("")}</ul>
-                ` : ""}
-
-                ${terms.length ? `
-                    <h4>🧠 Important Terms</h4>
-                    <ul>${terms.map(t => `<li>${t}</li>`).join("")}</ul>
-                ` : ""}
-
-                ${faqs.length ? `
-                    <h4>❓ FAQs</h4>
-                    <ul>
-                        ${faqs.map(f => `<li><strong>${f.q}</strong> – ${f.a}</li>`).join("")}
-                    </ul>
-                ` : ""}
-            </div>
-        `;
+  if (updateBtn) {
+    updateBtn.addEventListener('click', async ()=>{
+      setMsg(out, '');
+      const name = upName.value.trim(), email = upEmail.value.trim();
+      if (!name && !email) { setMsg(out, 'Change at least one field', true); return; }
+      updateBtn.disabled = true; updateBtn.textContent = 'Saving...';
+      try {
+        const token = readToken();
+        const res = await putJSON('/auth/me', { name, email }, token);
+        setMsg(out, res.message || 'Profile updated');
+        setTimeout(()=> location.reload(), 900);
+      } catch (err) {
+        setMsg(out, err.message || 'Update failed', true);
+      } finally {
+        updateBtn.disabled = false; updateBtn.textContent = 'Save changes';
+      }
     });
+  }
 
-    out.innerHTML = html;
-}
-
-
-/* ============================================================
-   🔵 FEATURE 4 — MCQs
-============================================================ */
-function makeMCQ() {
-    const input = document.getElementById("mcqInput");
-    const text = input?.value.trim() || "";
-
-    if (!text) {
-        alert("Please enter text to generate MCQs.");
-        return;
-    }
-
-    showLoader();
-
-    fetch(`${BASE_URL}/make-mcq`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text })
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (!data || !data.mcqs) {
-                alert("No MCQs received.");
-                return;
-            }
-            renderMCQs(data.mcqs);
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Error generating MCQs.");
-        })
-        .finally(() => hideLoader());
-}
-
-/* Premium MCQ Renderer */
-function renderMCQs(text) {
-    const out = document.getElementById("mcqOutput");
-    if (!out) return;
-
-    const lines = (typeof text === "string" ? text : JSON.stringify(text))
-        .split("\n")
-        .map(l => l.trim())
-        .filter(l => l.length > 0);
-
-    let html = `<div class="mcq-container"><div class="mcq-header">MCQs</div>`;
-
-    let currentQuestionOpen = false;
-
-    lines.forEach(line => {
-        // Question line: "1. What is..."
-        if (/^\d+\./.test(line)) {
-            if (currentQuestionOpen) {
-                html += "</ul>"; // close previous options list
-            }
-            html += `<div class="mcq-question">${line}</div>`;
-            html += `<ul class="mcq-options">`;
-            currentQuestionOpen = true;
-        }
-        // Options: "A) something"
-        else if (/^[A-D]\)/i.test(line)) {
-            const opt = line.replace(/^[A-D]\)\s*/, "");
-            html += `<li>${opt}</li>`;
-        }
-        // Correct answer line
-        else if (/^Correct answer:/i.test(line)) {
-            if (currentQuestionOpen) {
-                html += "</ul>";
-                currentQuestionOpen = false;
-            }
-            html += `<div class="mcq-correct">${line}</div>`;
-        }
+  if (logout) {
+    logout.addEventListener('click', () => {
+      clearToken();
+      go('index.html');
     });
-
-    if (currentQuestionOpen) html += "</ul>";
-
-    html += "</div>";
-    out.innerHTML = html;
+  }
 }
 
-/* ============================================================
-   🔵 FEATURE 5 — QnA CHAT
-============================================================ */
-function addMessage(msg, type) {
-    const box = document.getElementById("chatBox");
-    if (!box) return;
+/* Delete account page */
+function hookDelete() {
+  const btn = qs('#delete-submit'); if (!btn) return;
+  const confirmEl = qs('#delete-confirm'), out = qs('#delete-result'), cancel = qs('#cancel-delete');
 
-    const div = document.createElement("div");
-    div.className = `msg ${type}`;
-    div.innerText = msg;
-    box.appendChild(div);
-    box.scrollTop = box.scrollHeight;
-}
+  cancel?.addEventListener('click', ()=> go('profile.html'));
 
-function askChat() {
-    const text = document.getElementById("textInput")?.value.trim() || "";
-    const question = document.getElementById("questionInput")?.value.trim() || "";
-
-    if (!text) {
-        alert("Please paste some text (from PDF) first.");
-        return;
+  btn.addEventListener('click', async () => {
+    setMsg(out, '');
+    if ((confirmEl.value || '').trim() !== 'DELETE') { setMsg(out, 'Type DELETE to confirm', true); return; }
+    btn.disabled = true; btn.textContent = 'Deleting...';
+    try {
+      const token = readToken();
+      const res = await del('/auth/me', token);
+      setMsg(out, res.message || 'Account deleted');
+      clearToken();
+      setTimeout(()=> go('index.html'), 900);
+    } catch (err) {
+      setMsg(out, err.message || 'Delete failed', true);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Delete Account';
     }
-    if (!question) {
-        alert("Please enter a question.");
-        return;
-    }
-
-    addMessage(question, "user");
-    showLoader();
-
-    fetch(`${BASE_URL}/qna`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, question })
-    })
-        .then(res => res.json())
-        .then(data => {
-            addMessage(data.answer || "No answer received.", "bot");
-            const questionInput = document.getElementById("questionInput");
-            if (questionInput) questionInput.value = "";
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Error getting answer.");
-        })
-        .finally(() => hideLoader());
+  });
 }
 
-/* ============================================================
-   NOTES HISTORY (Notes Page)
-============================================================ */
-function loadNotes() {
-    const container = document.getElementById("notesContainer");
-    if (!container) return;
-
-    showLoader();
-
-    fetch(`${BASE_URL}/notes`)
-        .then(res => res.json())
-        .then(notes => {
-            if (!Array.isArray(notes) || notes.length === 0) {
-                container.innerHTML = "<p>No notes saved yet.</p>";
-                return;
-            }
-
-            container.innerHTML = notes
-                .map(n => `
-                    <div class="note-card">
-                        <h3>${n.pdf_name || "Untitled Note"}</h3>
-                        <p>${(n.summary || "").slice(0, 160)}...</p>
-                    </div>
-                `)
-                .join("");
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Error loading notes.");
-        })
-        .finally(() => hideLoader());
+/* Sidebar mobile toggle (keeps design same as index) */
+function enableMobileMenu() {
+  const menuBtn = qs('.menu-btn');
+  if (!menuBtn) return;
+  menuBtn.addEventListener('click', ()=> {
+    const sb = qs('.sidebar');
+    if (!sb) return;
+    sb.classList.toggle('open');
+  });
 }
 
-if (window.location.pathname.includes("notes.html")) {
-    window.addEventListener("DOMContentLoaded", loadNotes);
-}
+/* Initialize page hooks */
+document.addEventListener('DOMContentLoaded', () => {
+  applyTheme();
+  enableMobileMenu();
+  hookRegister();
+  hookLogin();
+  hookProfile();
+  hookDelete();
+});
