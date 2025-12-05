@@ -91,25 +91,48 @@
       // Accept both shapes: array OR { mcqs: [...] }
       const list = Array.isArray(data) ? data : (data && Array.isArray(data.mcqs) ? data.mcqs : null);
 
-      if(!list){
-        out.innerHTML = "<pre>" + esc(JSON.stringify(data, null, 2)) + "</pre>";
-      } else {
-        let html = "<div class='mcq-list'>";
-        list.forEach((q, idx) => {
-          html += "<div class='mcq-item'>";
-          html += "<strong>"+esc(q.question || q.title || ("Question " + (idx+1)))+"</strong>";
-          if(Array.isArray(q.options)){
-            html += "<div style='margin-top:8px;'>";
-            q.options.forEach((o,i)=> html += `<div>${String.fromCharCode(65+i)}) ${esc(o)}</div>`);
-            html += "</div>";
-          } else if(q.answer){
-            html += "<div style='margin-top:8px'>Answer: "+esc(q.answer)+"</div>";
-          }
-          html += "</div>";
+     if(!list){
+    const raw = data.mcqs || data;
+
+    // Convert markdown text into separate MCQs
+    const blocks = String(raw).split(/\*\*MCQ\s*\d+\*\*/i).filter(x => x.trim());
+
+    let html = "<div class='mcq-list'>";
+    blocks.forEach((block, idx) => {
+        const q = block.trim();
+
+        // Extract question (first line)
+        const lines = q.split("\n").map(l => l.trim()).filter(l => l);
+        const question = lines[0] || ("Question " + (idx+1));
+
+        // Extract options (lines starting with A), B), C), D))
+        const options = lines.filter(l => /^[A-D][\).]/i.test(l));
+
+        // Extract answer
+        const ansLine = lines.find(l => /^answer/i.test(l));
+        const answer = ansLine ? ansLine.replace(/answer[:\s]*/i, "") : null;
+
+        html += `<div class="mcq-item">
+          <strong>${esc(question)}</strong>
+          <div style="margin-top:8px">`;
+
+        options.forEach(o => {
+            html += `<div>${esc(o)}</div>`;
         });
-        html += "</div>";
-        out.innerHTML = html;
-      }
+
+        html += `</div>`;
+
+        if(answer){
+            html += `<div style="margin-top:10px"><b>Answer:</b> ${esc(answer)}</div>`;
+        }
+
+        html += `</div>`;
+    });
+
+    html += "</div>";
+    out.innerHTML = html;
+}
+
 
     } catch (err) {
       out.innerHTML = "<p style='color:#ff4d6d'>Error: "+esc(err.message||err)+"</p>";
