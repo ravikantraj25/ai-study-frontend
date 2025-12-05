@@ -135,60 +135,47 @@
   const countEl = document.getElementById("mcq-count");
   const tokenKey = "ai_study_token";
 
-  function show(e){ e.classList.remove("hidden"); }
-  function hide(e){ e.classList.add("hidden"); }
+  const esc = t => String(t || "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+  }[m]));
 
-  function esc(t){
-    return String(t||"").replace(/[&<>"']/g, m =>
-      ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m])
-    );
+  // --------------------------
+  // PARSE BACKEND STRING → STRUCTURED MCQS
+  // --------------------------
+  function parseMCQString(str) {
+
+      str = str.replace("Here are 5 MCQs based on the given text:", "").trim();
+
+      // split MCQs
+      const blocks = str.split(/MCQ\s+\d+/).filter(b => b.trim() !== "");
+
+      const mcqs = [];
+
+      blocks.forEach(block => {
+          const lines = block.trim().split("\n").map(l => l.trim()).filter(l => l);
+
+          let question = lines[0];
+          let options = [];
+          let answer = "";
+
+          lines.forEach(line => {
+              if (/^[A-D]\)/.test(line)) {
+                  options.push(line.substring(3).trim());
+              }
+              if (line.toLowerCase().startsWith("correct answer")) {
+                  answer = line.split(":")[1].trim();
+                  answer = answer.replace(/^[A-D]\)/, "").trim();
+              }
+          });
+
+          mcqs.push({ question, options, answer });
+      });
+
+      return mcqs;
   }
 
   // --------------------------
-  // STRING → STRUCTURED MCQs
-  // --------------------------
-  // --------------------------
-// PARSE BACKEND STRING
-// --------------------------
-function parseMCQString(str) {
-    // Remove header text if present
-    str = str.replace("Here are 5 MCQs based on the given text:", "").trim();
-
-    // Split MCQs based on the "MCQ X" pattern
-    const groups = str.split(/MCQ\s+\d+/).filter(g => g.trim() !== "");
-
-    const mcqs = [];
-
-    groups.forEach(group => {
-        const lines = group.trim().split("\n").map(l => l.trim()).filter(l => l);
-
-        let question = lines[0]; // first line = question
-        let options = [];
-        let answer = "";
-
-        // Parse options and answer
-        lines.forEach(line => {
-            if (/^[A-D]\)/.test(line)) {
-                // A) option text
-                options.push(line.substring(3).trim());
-            }
-
-            if (line.toLowerCase().startsWith("correct answer")) {
-                answer = line.split(":")[1].trim();
-                // remove "B)" etc.
-                answer = answer.replace(/^[A-D]\)/, "").trim();
-            }
-        });
-
-        mcqs.push({ question, options, answer });
-    });
-
-    return mcqs;
-}
-
-
-  // --------------------------
-  // MAIN BUTTON EVENT
+  // GENERATE MCQS
   // --------------------------
   btn.addEventListener("click", async ()=>{
 
@@ -196,18 +183,18 @@ function parseMCQString(str) {
     const text = textEl.value.trim();
     const count = Number(countEl.value);
 
-    if(!text){
+    if (!text) {
       out.innerHTML = "<p style='color:#ff4d6d'>Enter topic or text.</p>";
       return;
     }
 
-    show(loader);
+    loader.classList.remove("hidden");
     btn.disabled = true;
 
     try {
       const headers = { "Content-Type": "application/json" };
       const token = localStorage.getItem(tokenKey);
-      if(token) headers["Authorization"] = "Bearer " + token;
+      if (token) headers["Authorization"] = "Bearer " + token;
 
       const resp = await fetch(API + "/make-mcq", {
         method: "POST",
@@ -216,24 +203,23 @@ function parseMCQString(str) {
       });
 
       const data = await resp.json();
-
-      // Backend gives STRING
-      // Convert string → Array
       const list = parseMCQString(data.mcqs);
 
-      // Build UI
       let html = "";
       list.forEach((q, i) => {
         html += `
           <div class="mcq-card">
             <div class="mcq-question">MCQ ${i+1}: ${esc(q.question)}</div>
 
-            ${q.options
-              .map((opt, idx) => `
-                <div class="mcq-option ${q.answer === opt ? "correct" : ""}">
-                  ${String.fromCharCode(65 + idx)}) ${esc(opt)}
-                </div>
-              `).join("")}
+            ${q.options.map((opt, idx) => `
+              <div class="mcq-option ${opt === q.answer ? "correct" : ""}">
+                ${String.fromCharCode(65 + idx)}) ${esc(opt)}
+              </div>
+            `).join("")}
+
+            <div style="margin-top:10px; opacity:0.7;">
+              <strong>Correct Answer:</strong> ${esc(q.answer)}
+            </div>
           </div>
         `;
       });
@@ -243,7 +229,7 @@ function parseMCQString(str) {
     } catch(err) {
       out.innerHTML = "<p style='color:#ff4d6d'>Error: " + esc(err.message) + "</p>";
     } finally {
-      hide(loader);
+      loader.classList.add("hidden");
       btn.disabled = false;
     }
 
