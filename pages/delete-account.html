@@ -1,52 +1,42 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Delete Account — AI Study</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="../styles.css">
+<meta charset="utf-8">
+<title>Delete Account — AI Study</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../styles.css">
 </head>
-<body class="fade-in">
+<body>
+<aside class="sidebar" id="sidebar">
+  <div class="brand">AI Study</div>
+  <a href="../index.html">Home</a>
+  <a href="summarize.html">Summarize PDF</a>
+  <a href="make-notes.html">Make Notes</a>
+  <a href="mcq.html">Make MCQ</a>
+  <a href="explain.html">Explain</a>
+  <a href="qna.html">QnA</a>
+  <a href="notes.html">Notes History</a>
+  <div class="spacer"></div>
+  <a href="profile.html">Profile</a>
+  <a href="delete-account.html" class="active">Delete Account</a>
+</aside>
 
-  <header class="navbar container">
-    <div class="logo">AI Study</div>
-    <nav class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="profile.html">Profile</a>
-      <button class="theme-toggle">Toggle</button>
-    </nav>
-  </header>
+<main class="content-with-sidebar">
+  <div class="page-wrapper container">
+    <h1 class="h-gradient">Delete Account</h1>
+    <p class="center mt-18">This action is permanent. Type <strong>DELETE</strong> to confirm.</p>
 
-  <aside class="sidebar fade-in">
-    <a class="nav-item" href="index.html">Home</a>
-    <a class="nav-item" href="summarize.html">Summarize PDF</a>
-    <a class="nav-item" href="explain.html">Explain</a>
-    <a class="nav-item" href="notes.html">Make Notes</a>
-    <a class="nav-item" href="mcq.html">Make MCQ</a>
-    <a class="nav-item" href="qna.html">QnA</a>
-    <div class="spacer"></div>
-    <a class="nav-item" href="update-profile.html">Update Profile</a>
-    <a class="nav-item active" href="delete-account.html">Delete Account</a>
-  </aside>
-
-  <main class="page-content">
-    <div class="container">
-      <section class="explain-header-card">
-        <h2>Delete account</h2>
-        <p style="margin-top:8px;color:var(--muted)">This action is permanent. Type <strong>DELETE</strong> to confirm.</p>
-      </section>
-
-      <div class="note-section-card" style="max-width:720px;margin:0 auto;">
-        <input id="delete-confirm" placeholder="Type DELETE to confirm" />
-        <div style="margin-top:14px;display:flex;gap:12px;">
-          <button id="delete-submit" class="btn" style="background:#ff5b6e">Delete Account</button>
-          <button id="cancel-delete" class="btn alt">Cancel</button>
-        </div>
-        <div id="delete-result" style="margin-top:14px"></div>
+    <div class="card mt-18">
+      <input id="delete-confirm" placeholder="Type DELETE to confirm" style="width:100%;padding:12px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:#fff">
+      <div style="margin-top:12px;display:flex;gap:12px">
+        <button id="delete-submit" class="btn-primary" style="background:#ff5b6e">Delete Account</button>
+        <button id="cancel-delete" class="btn-primary" style="background:transparent;border:1px solid rgba(255,255,255,0.06)">Cancel</button>
       </div>
+      <div id="delete-result" style="margin-top:12px;color:var(--muted)"></div>
     </div>
-  </main>
+  </div>
+</main>
 
-  <script src="app.js"></script>
+<script src="../app.js"></script>
 </body>
 </html>

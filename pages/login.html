@@ -1,58 +1,63 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Login — AI Study</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="../styles.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Login — AI Study</title>
+<link rel="stylesheet" href="../styles.css" />
 </head>
-<body class="fade-in">
 
-  <header class="navbar container">
-    <div class="logo">AI Study</div>
-    <nav class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="register.html">Register</a>
-      <button class="theme-toggle">Toggle</button>
-    </nav>
-  </header>
+<body>
 
-  <aside class="sidebar fade-in">
-    <a class="nav-item" href="index.html">Home</a>
-    <a class="nav-item" href="summarize.html">Summarize PDF</a>
-    <a class="nav-item" href="explain.html">Explain</a>
-    <a class="nav-item" href="notes.html">Make Notes</a>
-    <a class="nav-item" href="mcq.html">Make MCQ</a>
-    <a class="nav-item" href="qna.html">QnA</a>
-    <div class="spacer"></div>
-    <a class="nav-item" href="register.html">Register</a>
-    <a class="nav-item" href="login.html">Login</a>
-  </aside>
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="brand">AI Study</div>
 
-  <main class="page-content">
-    <div class="container">
-      <section class="explain-header-card">
-        <h2>Welcome back</h2>
-        <p style="margin-top:8px;color:var(--muted)">Login to continue — your session will be kept secure.</p>
-      </section>
+  <a href="../index.html">Home</a>
+  <a href="summarize.html">Summarize PDF</a>
+  <a href="make-notes.html">Make Notes</a>
+  <a href="mcq.html">Make MCQ</a>
+  <a href="explain.html">Explain</a>
+  <a href="qna.html">QnA</a>
+  <a href="notes.html">Notes History</a>
 
-      <div class="note-section-card" style="max-width:720px;margin:0 auto;">
-        <label for="login-email">Email</label>
-        <input id="login-email" type="email" placeholder="you@example.com">
+  <div style="flex:1"></div>
 
-        <label for="login-password">Password</label>
-        <input id="login-password" type="password" placeholder="Your password">
+  <a href="register.html">Register</a>
+  <a href="login.html" class="active">Login</a>
+</aside>
 
-        <div style="margin-top:14px;display:flex;gap:12px;align-items:center;">
-          <button id="login-submit" class="btn">Login</button>
-          <button id="login-to-register" class="btn alt">Create account</button>
-        </div>
 
-        <div id="login-result" style="margin-top:14px"></div>
+<!-- Page Content -->
+<main class="content-with-sidebar">
+  <div class="page-wrapper">
+    <h1 class="h-gradient">Login</h1>
+    <p class="center mt-18">Access your saved notes and AI tools.</p>
+
+    <div class="card mt-18">
+
+      <label>Email</label>
+      <input id="login-email" type="email" placeholder="you@example.com" />
+
+      <label style="margin-top:12px">Password</label>
+      <input id="login-password" type="password" placeholder="Enter password" />
+
+      <div style="margin-top:16px;display:flex;gap:12px;align-items:center">
+        <button id="login-submit" class="btn-primary">Login</button>
+        <button onclick="location.href='register.html'"
+                class="btn-primary"
+                style="background:transparent;border:1px solid rgba(255,255,255,0.1)">
+          Create Account
+        </button>
+
+        <div id="login-loader" class="loader hidden" style="margin-left:12px"></div>
       </div>
-    </div>
-  </main>
 
-  <script src="app.js"></script>
+      <div id="login-result" style="margin-top:12px;color:#ff8080"></div>
+    </div>
+  </div>
+</main>
+
+<script src="../app.js"></script>
 </body>
 </html>

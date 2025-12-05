@@ -1,32 +1,53 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-    <title>Notes History</title>
-    <link rel="stylesheet" href="../styles.css">
+<meta charset="utf-8">
+<title>Notes History — AI Study</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../styles.css">
 </head>
 <body>
+<aside class="sidebar" id="sidebar">
+  <div class="brand">AI Study</div>
+  <a href="../index.html">Home</a>
+  <a href="summarize.html">Summarize PDF</a>
+  <a href="make-notes.html">Make Notes</a>
+  <a href="mcq.html">Make MCQ</a>
+  <a href="explain.html">Explain</a>
+  <a href="qna.html">QnA</a>
+  <a href="notes.html" class="active">Notes History</a>
+  <div class="spacer"></div>
+  <a href="profile.html">Update Profile</a>
+  <a href="delete-account.html">Delete Account</a>
+</aside>
 
-<button class="menu-btn" onclick="toggleSidebar()">☰</button>
+<main class="content-with-sidebar">
+  <div class="page-wrapper container">
+    <h1 class="h-gradient">Notes History</h1>
+    <p class="center mt-18">All notes you've generated will appear here.</p>
 
-<div class="sidebar" id="sidebar">
-    <a href="../index.html">🏠 Home</a>
-    <a href="summarize.html">📄 Summarize PDF</a>
-    <a href="make-notes.html">📝 Make Notes</a>
-    <a href="mcq.html">❓ Make MCQs</a>
-    <a href="explain.html">💡 Explain Topic</a>
-    <a href="qna.html">💬 QnA</a>
-    <a href="notes.html">📚 Notes History</a>
-    <a href="#" onclick="toggleTheme(); return false;">🌙 Toggle Dark Mode</a>
-</div>
-
-<div class="container">
-    <h2>Saved Notes</h2>
-
-    <div id="loader" class="loader"></div>
-
-    <div id="notesContainer"></div>
-</div>
+    <div id="notes-list" class="card mt-18">
+      <p>Loading...</p>
+    </div>
+  </div>
+</main>
 
 <script src="../app.js"></script>
+<script>
+(async ()=>{
+  const out = document.getElementById('notes-list');
+  try{
+    const token = localStorage.getItem('ai_study_token');
+    const res = await fetch((window.API_BASE||'') + '/notes', { method:'GET', headers: token?{ Authorization:'Bearer '+token }:{} });
+    const json = await res.json();
+    if (!json || !Array.isArray(json)) { out.innerHTML = '<p>No notes found.</p>'; return; }
+    out.innerHTML = '<div style="display:grid;gap:12px">';
+    json.forEach(n=>{
+      out.innerHTML += `<div style="padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);"><strong>${n.title||'Note'}</strong><div style="opacity:.9;margin-top:6px">${String(n.content||n.summary||'').slice(0,400).replace(/\n/g,'<br>')}</div></div>`;
+    });
+    out.innerHTML += '</div>';
+  }catch(err){ out.innerHTML = '<p>Error loading notes: '+(err.message||err)+'</p>' }
+})();
+</script>
 </body>
 </html>

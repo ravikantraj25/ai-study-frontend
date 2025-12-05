@@ -1,144 +1,75 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-    <title>Summarize PDF</title>
-    <link rel="stylesheet" href="../styles.css">
-
-    <style>
-        /* ---------- PREMIUM PAGE TITLE ---------- */
-        .page-title {
-            font-size: 38px;
-            font-weight: 800;
-            margin-bottom: 20px;
-            background: linear-gradient(90deg, #7c3aed, #5b21b6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* ---------- FILE INPUT PREMIUM ---------- */
-        input[type="file"] {
-            padding: 14px;
-            background: rgba(255,255,255,0.7);
-            border-radius: 14px;
-            border: 1px solid #e5e7eb;
-            width: 100%;
-            max-width: 600px;
-            cursor: pointer;
-            transition: 0.25s;
-        }
-
-        input[type="file"]:hover {
-            background: rgba(255,255,255,1);
-            transform: translateY(-2px);
-        }
-
-        /* ---------- PREMIUM SUMMARY CARD (Same theme as Explain Topic) ---------- */
-        .summary-card {
-            background: #ffffff;
-            padding: 30px;
-            margin-top: 25px;
-            border-radius: 18px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-            border-left: 6px solid #7c3aed;
-            font-size: 17px;
-            line-height: 1.7;
-            color: #333;
-            animation: fadeIn 0.5s ease-out forwards;
-            white-space: normal;
-            overflow-wrap: break-word;
-        }
-
-        /* Section heading */
-        .summary-card h3 {
-            color: #4c1d95;
-            font-size: 22px;
-            font-weight: 700;
-            margin-top: 25px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* Icon for headings */
-        .summary-card h3::before {
-            content: "🔷";
-            font-size: 22px;
-        }
-
-        /* Bullet points */
-        .summary-card ul {
-            padding-left: 25px;
-            margin-top: 10px;
-        }
-
-        .summary-card li {
-            margin-bottom: 8px;
-            color: #444;
-        }
-
-        /* Fade-in Animation */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+<meta charset="utf-8">
+<title>Summarize PDF — AI Study</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../styles.css">
 </head>
-
 <body>
 
-<button class="menu-btn" onclick="toggleSidebar()">☰</button>
+<!-- sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">AI Study</div>
+  <a href="../index.html">Home</a>
+  <a href="summarize.html" class="active">Summarize PDF</a>
+  <a href="make-notes.html">Make Notes</a>
+  <a href="mcq.html">Make MCQ</a>
+  <a href="explain.html">Explain</a>
+  <a href="qna.html">QnA</a>
+  <a href="notes.html">Notes History</a>
+  <div class="spacer"></div>
+  <a href="profile.html">Update Profile</a>
+  <a href="delete-account.html">Delete Account</a>
+</aside>
 
-<div class="sidebar" id="sidebar">
-    <a href="../index.html">🏠 Home</a>
-    <a href="summarize.html">📄 Summarize PDF</a>
-    <a href="make-notes.html">📝 Make Notes</a>
-    <a href="mcq.html">❓ Make MCQs</a>
-    <a href="explain.html">💡 Explain Topic</a>
-    <a href="qna.html">💬 QnA</a>
-    <a href="notes.html">📚 Notes History</a>
-    <a href="#" onclick="toggleTheme(); return false;">🌙 Toggle Dark Mode</a>
-</div>
+<!-- page content -->
+<main class="content-with-sidebar">
+  <div class="page-wrapper container">
+    <h1 class="h-gradient">Summarize PDF</h1>
+    <p class="center mt-18">Upload a PDF and get a smart AI summary with key-points and suggested MCQs.</p>
 
-<div class="container">
+    <div class="upload-card mt-18 card">
+      <input id="pdfFile" type="file" accept="application/pdf" class="input-file">
+      <div class="mt-18">
+        <button class="btn-primary" onclick="summarizePDF()">Generate Summary</button>
+        <span id="summarize-loader" class="loader hidden"></span>
+      </div>
+    </div>
 
-    <h2 class="page-title">Summarize PDF</h2>
-
-    <input type="file" id="pdfFile" accept="application/pdf">
-
-    <button class="btn" onclick="summarizePDF()">Summarize</button>
-
-    <div id="loader" class="loader"></div>
-
-    <h3 style="margin-top: 30px;">Result</h3>
-
-    <div id="result" class="summary-card"></div>
-
-</div>
+    <div id="summarize-result" class="result-card"></div>
+  </div>
+</main>
 
 <script src="../app.js"></script>
-
 <script>
-    // Convert plain AI summary to premium HTML
-    function convertSummaryToHTML(text) {
-
-        // Convert headings (### or **title**)
-        text = text.replace(/^\s*(###|\*\*)(.*?)(\*\*)?$/gm, "<h3>$2</h3>");
-
-        // Convert bullet points (*, -, +)
-        text = text.replace(/^\s*[\*\-\+]\s+(.*)$/gm, "<li>$1</li>");
-
-        // Wrap bullets inside <ul>
-        text = text.replace(/(<li>[\s\S]*?<\/li>)/g, "<ul>$1</ul>");
-
-        return text;
-    }
-
-    // Override default output renderer
-    function updateSummaryResult(summary) {
-        const out = document.getElementById("result");
-        out.innerHTML = convertSummaryToHTML(summary);
-    }
+  // hooking function used earlier - ensure summarizePDF exists (app.js may already include)
+  async function summarizePDF(){
+    const fileInput = document.getElementById('pdfFile');
+    const loader = document.getElementById('summarize-loader');
+    const out = document.getElementById('summarize-result');
+    out.innerHTML = '';
+    if (!fileInput.files || fileInput.files.length===0){ out.innerText='Choose a PDF file.'; return; }
+    loader.classList.remove('hidden');
+    try {
+      const form = new FormData();
+      form.append('file', fileInput.files[0]);
+      const token = localStorage.getItem('ai_study_token');
+      const res = await fetch((window.API_BASE || '') + '/summarize', {
+        method:'POST',
+        headers: token ? { 'Authorization': 'Bearer ' + token } : {},
+        body: form
+      });
+      const json = await res.json();
+      // format response intelligently
+      let text = '';
+      if (Array.isArray(json)) text = json.map(r=> r.summary || JSON.stringify(r)).join('\n\n');
+      else text = json.summary || json.text || JSON.stringify(json, null, 2);
+      out.innerHTML = '<h3>Summary</h3><p>' + (String(text).replace(/\n/g, '<br>')) + '</p>';
+    } catch (err) {
+      out.innerText = 'Error: ' + (err.message || err);
+    } finally { loader.classList.add('hidden'); }
+  }
 </script>
-
 </body>
 </html>

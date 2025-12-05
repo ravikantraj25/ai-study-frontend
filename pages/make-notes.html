@@ -1,39 +1,67 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-    <title>Make Notes</title>
-    <link rel="stylesheet" href="../styles.css">
+<meta charset="utf-8">
+<title>Make Notes — AI Study</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../styles.css">
 </head>
 <body>
+<aside class="sidebar" id="sidebar">
+  <div class="brand">AI Study</div>
+  <a href="../index.html">Home</a>
+  <a href="summarize.html">Summarize PDF</a>
+  <a href="make-notes.html" class="active">Make Notes</a>
+  <a href="mcq.html">Make MCQ</a>
+  <a href="explain.html">Explain</a>
+  <a href="qna.html">QnA</a>
+  <a href="notes.html">Notes History</a>
+  <div class="spacer"></div>
+  <a href="profile.html">Update Profile</a>
+  <a href="delete-account.html">Delete Account</a>
+</aside>
 
-<button class="menu-btn" onclick="toggleSidebar()">☰</button>
+<main class="content-with-sidebar">
+  <div class="page-wrapper container">
+    <h1 class="h-gradient">Make Notes</h1>
+    <p class="center mt-18">Paste text or upload content to create structured study notes.</p>
 
-<div class="sidebar" id="sidebar">
-    <a href="../index.html">🏠 Home</a>
-    <a href="summarize.html">📄 Summarize PDF</a>
-    <a href="make-notes.html">📝 Make Notes</a>
-    <a href="mcq.html">❓ Make MCQs</a>
-    <a href="explain.html">💡 Explain Topic</a>
-    <a href="qna.html">💬 QnA</a>
-    <a href="notes.html">📚 Notes History</a>
-    <a href="#" onclick="toggleTheme(); return false;">🌙 Toggle Dark Mode</a>
-</div>
+    <div class="card mt-18">
+      <textarea id="notes-text" rows="8" placeholder="Paste your text or write topic here..." style="width:100%;padding:12px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:#fff"></textarea>
+      <div style="margin-top:12px;display:flex;gap:12px;align-items:center;">
+        <select id="notes-format" style="padding:10px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:#fff">
+          <option value="concise">Concise</option>
+          <option value="bullet">Bullet points</option>
+          <option value="detailed">Detailed</option>
+        </select>
+        <button id="notes-submit" class="btn-primary">Create Notes</button>
+        <span id="notes-loader" class="loader hidden"></span>
+      </div>
+    </div>
 
-<div class="container">
-    <h2>Generate Bullet Notes</h2>
-
-    <textarea id="notesInput" rows="8" placeholder="Enter your text here..."></textarea>
-
-    <button class="btn" onclick="makeNotes()">Generate Notes</button>
-    <button class="btn" onclick="copyText('notesOutput')">Copy</button>
-    <button class="btn" onclick="downloadAsPDF('notesOutput')">Download as PDF</button>
-
-    <div id="loader" class="loader"></div>
-
-    <h3>Notes</h3>
-    <pre id="notesOutput"></pre>
-</div>
+    <div id="notes-result" class="result-card"></div>
+  </div>
+</main>
 
 <script src="../app.js"></script>
+<script>
+document.getElementById('notes-submit').addEventListener('click', async ()=>{
+  const text = document.getElementById('notes-text').value.trim();
+  const format = document.getElementById('notes-format').value;
+  const out = document.getElementById('notes-result'); const loader = document.getElementById('notes-loader');
+  if (!text) { out.innerText = 'Enter text'; return; }
+  loader.classList.remove('hidden'); out.innerHTML='';
+  try{
+    const token = localStorage.getItem('ai_study_token');
+    const res = await fetch((window.API_BASE||'') + '/make-notes', {
+      method:'POST', headers: { 'Content-Type':'application/json', ...(token?{Authorization:'Bearer '+token}:{}) }, body: JSON.stringify({ text, format })
+    });
+    const json = await res.json();
+    const notes = json.notes || json.summary || JSON.stringify(json, null,2);
+    out.innerHTML = '<h3>Notes</h3><p>' + String(notes).replace(/\n/g,'<br>') + '</p>';
+  } catch(err) { out.innerText = 'Error: ' + (err.message||err) }
+  finally{ loader.classList.add('hidden') }
+});
+</script>
 </body>
 </html>

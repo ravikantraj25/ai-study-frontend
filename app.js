@@ -1,227 +1,486 @@
-/* app.js
-   Auth handlers + theme + small UI helpers
-   - stores token in localStorage under key: ai_study_token
-   - adapt API_BASE if needed
-*/
+/* -----------------------------------------------------------------------------
+   AI-STUDY FRONTEND — FINAL STABLE VERSION (100% Backend Compatible)
+   -----------------------------------------------------------------------------*/
 
-const API_BASE = 'https://ai-study-backened.onrender.com'; // <- change if your backend differs
-const TOKEN_KEY = 'ai_study_token';
+const API_BASE = window.API_BASE || "https://ai-study-backened.onrender.com";
+const TOKEN_KEY = "ai_study_token";
+const USERNAME_KEY = "ai_study_user";
+const DEBUG = false;
 
-/* ---------- Utilities ---------- */
-function qs(sel, root = document) { return root.querySelector(sel); }
-function qsa(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
-function setMsg(el, text, isError = false) {
-  if (!el) return;
-  el.textContent = text;
-  el.style.color = isError ? '#ff4d6d' : '';
+/* ---------- Helpers ---------- */
+function dbg(...a){ if(DEBUG) console.log(...a); }
+function qs(s, r=document){ return r.querySelector(s); }
+function go(p){ location.href = p; }
+function setMsg(el, msg, err=false){
+  if(!el) return;
+  if(typeof msg === "object") msg = JSON.stringify(msg, null, 2);
+  el.innerHTML = msg;
+  el.style.color = err ? "#ff4d6d" : "";
 }
-function go(path) { window.location.href = path; }
+function saveToken(t){ if(t) localStorage.setItem(TOKEN_KEY, t); }
+function readToken(){ return localStorage.getItem(TOKEN_KEY); }
+function clearToken(){ localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(USERNAME_KEY); }
+function escapeHtml(t){ return String(t||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m])); }
+function showLoader(el){ if(el) el.classList.remove("hidden"); }
+function hideLoader(el){ if(el) el.classList.add("hidden"); }
 
-/* ---------- Theme handling (works with your styles.css "body.dark") ---------- */
-function applyTheme() {
-  const saved = localStorage.getItem('theme');
-  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const theme = saved || (prefersDark ? 'dark' : 'light');
-  document.body.classList.toggle('dark', theme === 'dark');
-}
-function toggleTheme() {
-  const isDark = document.body.classList.contains('dark');
-  document.body.classList.toggle('dark', !isDark);
-  localStorage.setItem('theme', (!isDark) ? 'dark' : 'light');
-}
+/* ---------- Response Parsing ---------- */
+async function parseResponse(res){
+  const ct = (res.headers.get("content-type") || "").toLowerCase();
 
-/* wire theme toggle buttons */
-document.addEventListener('click', (ev) => {
-  if (ev.target.matches('.theme-toggle')) toggleTheme();
-});
+  if(ct.includes("json")){
+    try { return await res.json(); } catch(e){}
+  }
 
-/* ---------- Auth helpers ---------- */
-function saveToken(token) { localStorage.setItem(TOKEN_KEY, token); }
-function readToken() { return localStorage.getItem(TOKEN_KEY); }
-function clearToken() { localStorage.removeItem(TOKEN_KEY); }
+  try {
+    const clone = res.clone();
+    const maybe = await clone.json().catch(()=>null);
+    if(maybe) return maybe;
+  } catch(e){}
 
-/* wrapper for JSON POST */
-async function postJSON(path, body = {}, token = null) {
-  const headers = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(API_BASE + path, { method: 'POST', headers, body: JSON.stringify(body) });
-  const json = await res.json().catch(()=>({}));
-  if (!res.ok) throw new Error(json.message || `Error ${res.status}`);
-  return json;
+  return await res.text().catch(()=>null);
 }
 
-/* wrapper for GET */
-async function getJSON(path, token = null) {
+function prettyErr(parsed, status){
+  if(!parsed) return `Error ${status}`;
+  if(typeof parsed === "string") return parsed;
+  if(parsed.message) return parsed.message;
+  if(parsed.error) return parsed.error;
+  return JSON.stringify(parsed);
+}
+
+/* ---------- HTTP Wrapper ---------- */
+async function request(method, path, data=null, token=null, opts={}){
   const headers = {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(API_BASE + path, { method: 'GET', headers });
-  const json = await res.json().catch(()=>({}));
-  if (!res.ok) throw new Error(json.message || `Error ${res.status}`);
-  return json;
+  if(!opts.form) headers["Content-Type"] = "application/json";
+  if(token) headers["Authorization"] = `Bearer ${token}`;
+
+  const body = opts.form ? data : (data ? JSON.stringify(data) : null);
+
+  dbg("REQUEST", method, path, body);
+
+  let res;
+  try {
+    res = await fetch(API_BASE + path, { method, headers, body });
+  } catch(e){
+    throw new Error("Network error: " + (e.message || e));
+  }
+
+  const parsed = await parseResponse(res);
+
+  if(!res.ok) throw new Error(prettyErr(parsed, res.status));
+
+  return parsed;
 }
 
-/* wrapper for PUT */
-async function putJSON(path, body = {}, token = null) {
-  const headers = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(API_BASE + path, { method: 'PUT', headers, body: JSON.stringify(body) });
-  const json = await res.json().catch(()=>({}));
-  if (!res.ok) throw new Error(json.message || `Error ${res.status}`);
-  return json;
-}
+const post = (p,d,t,o={}) => request("POST",p,d,t,o);
+const get  = (p,t) => request("GET",p,null,t);
+const put  = (p,d,t) => request("PUT",p,d,t);
+const del  = (p,t) => request("DELETE",p,null,t);
 
-/* wrapper for DELETE */
-async function del(path, token = null) {
-  const headers = {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(API_BASE + path, { method: 'DELETE', headers });
-  const json = await res.json().catch(()=>({}));
-  if (!res.ok) throw new Error(json.message || `Error ${res.status}`);
-  return json;
-}
+/* -----------------------------------------------------------------------------
+   AUTH: REGISTER
+-----------------------------------------------------------------------------*/
+function hookRegister(){
+  const btn = qs("#reg-submit"); if(!btn) return;
 
-/* ---------- Page hooks ---------- */
+  btn.onclick = async ()=>{
+    const name = qs("#reg-name").value.trim();
+    const email = qs("#reg-email").value.trim();
+    const password = qs("#reg-password").value;
+    const mobile = qs("#reg-mobile")?.value?.trim();
+    const out = qs("#reg-result");
 
-/* Register page */
-function hookRegister() {
-  const btn = qs('#reg-submit');
-  if (!btn) return;
-  const nameEl = qs('#reg-name'), emailEl = qs('#reg-email'), passEl = qs('#reg-password'), out = qs('#reg-result');
+    if(!name || !email || !password) return setMsg(out,"All fields required",true);
 
-  qs('#reg-to-login')?.addEventListener('click', ()=> go('login.html'));
+    btn.disabled = true; btn.innerText = "Creating...";
 
-  btn.addEventListener('click', async () => {
-    setMsg(out, '');
-    const name = nameEl.value.trim(), email = emailEl.value.trim(), password = passEl.value;
-    if (!name || !email || !password) { setMsg(out, 'Please fill all fields', true); return; }
-    btn.disabled = true; btn.textContent = 'Creating...';
     try {
-      const res = await postJSON('/auth/register', { name, email, password });
-      if (res.token) { saveToken(res.token); setMsg(out, 'Registered & logged in ✅'); setTimeout(()=> go('profile.html'), 900); }
-      else { setMsg(out, res.message || 'Registered. Please login.'); setTimeout(()=> go('login.html'), 900); }
-    } catch (err) { setMsg(out, err.message || 'Registration failed', true); }
-    finally { btn.disabled = false; btn.textContent = 'Create Account'; }
-  });
-}
-
-/* Login page */
-function hookLogin() {
-  const btn = qs('#login-submit');
-  if (!btn) return;
-  const emailEl = qs('#login-email'), passEl = qs('#login-password'), out = qs('#login-result');
-
-  qs('#login-to-register')?.addEventListener('click', ()=> go('register.html'));
-
-  btn.addEventListener('click', async () => {
-    setMsg(out, '');
-    const email = emailEl.value.trim(), password = passEl.value;
-    if (!email || !password) { setMsg(out, 'Please enter email and password', true); return; }
-    btn.disabled = true; btn.textContent = 'Logging in...';
-    try {
-      const res = await postJSON('/auth/login', { email, password });
-      if (res.token) {
-        saveToken(res.token);
-        setMsg(out, 'Login successful ✅');
-        setTimeout(()=> go('profile.html'), 700);
-      } else {
-        setMsg(out, res.message || 'Login failed', true);
-      }
-    } catch (err) {
-      setMsg(out, err.message || 'Login failed', true);
-    } finally {
-      btn.disabled = false; btn.textContent = 'Login';
+      const res = await post("/auth/register",{ name,email,password,mobile });
+      setMsg(out,res.message || "Account created ✓");
+      setTimeout(()=>go("login.html"),700);
+    } catch(e){
+      setMsg(out,e.message,true);
     }
-  });
+
+    btn.disabled = false; btn.innerText = "Create Account";
+  };
 }
 
-/* Profile page (view + update + logout) */
-function hookProfile() {
-  const info = qs('#profile-info');
-  const upName = qs('#up-name'), upEmail = qs('#up-email'), updateBtn = qs('#update-submit'), out = qs('#update-result'), logout = qs('#logout-btn');
-  if (!info) return;
+/* -----------------------------------------------------------------------------
+   AUTH: LOGIN (returns access_token)
+-----------------------------------------------------------------------------*/
+function hookLogin(){
+  const btn = qs("#login-submit"); if(!btn) return;
 
-  (async ()=>{
-    const token = readToken();
-    if (!token) { info.innerHTML = 'Not logged in. <a href="login.html">Login</a>'; return; }
+  btn.onclick = async ()=>{
+    const email = qs("#login-email").value.trim();
+    const password = qs("#login-password").value;
+    const out = qs("#login-result");
+
+    if(!email || !password) return setMsg(out,"Email + password required",true);
+
+    btn.disabled = true; btn.innerText = "Logging in...";
+
     try {
-      const u = await getJSON('/auth/me', token);
-      info.innerHTML = `<div><strong>${u.name||u.fullname||'User'}</strong> — ${u.email||''}</div>`;
-      upName.value = u.name || '';
-      upEmail.value = u.email || '';
-    } catch (err) {
-      info.textContent = 'Error loading profile: ' + err.message;
+      const res = await post("/auth/login",{ email,password });
+      const token = res.access_token;
+      if(!token) throw new Error("Token missing");
+
+      saveToken(token);
+      const name = res.user?.name || "User";
+      localStorage.setItem(USERNAME_KEY,name);
+
+      setMsg(out,"Login successful ✓");
+      setTimeout(()=>go("profile.html"),600);
+
+    } catch(e){
+      setMsg(out,"Login failed: "+e.message,true);
+    }
+
+    btn.disabled = false; btn.innerText = "Login";
+  };
+}
+
+/* -----------------------------------------------------------------------------
+   PROFILE PAGE
+-----------------------------------------------------------------------------*/
+function hookProfile(){
+  const info = qs("#profile-info"); if(!info) return;
+
+  // Load profile
+  (async ()=>{
+    try {
+      const user = await get("/auth/me",readToken());
+      qs("#up-name").value = user.name;
+      qs("#up-mobile").value = user.mobile;
+      info.innerHTML = `<b>${user.name}</b> — ${user.email}`;
+    } catch(e){
+      info.innerHTML = "Not logged in.";
     }
   })();
 
-  if (updateBtn) {
-    updateBtn.addEventListener('click', async ()=>{
-      setMsg(out, '');
-      const name = upName.value.trim(), email = upEmail.value.trim();
-      if (!name && !email) { setMsg(out, 'Change at least one field', true); return; }
-      updateBtn.disabled = true; updateBtn.textContent = 'Saving...';
-      try {
-        const token = readToken();
-        const res = await putJSON('/auth/me', { name, email }, token);
-        setMsg(out, res.message || 'Profile updated');
-        setTimeout(()=> location.reload(), 900);
-      } catch (err) {
-        setMsg(out, err.message || 'Update failed', true);
-      } finally {
-        updateBtn.disabled = false; updateBtn.textContent = 'Save changes';
-      }
-    });
-  }
+  // Update profile
+  qs("#update-submit")?.addEventListener("click", async ()=>{
+    const name = qs("#up-name").value.trim();
+    const mobile = qs("#up-mobile").value.trim();
+    const out = qs("#update-result");
 
-  if (logout) {
-    logout.addEventListener('click', () => {
-      clearToken();
-      go('index.html');
-    });
-  }
-}
-
-/* Delete account page */
-function hookDelete() {
-  const btn = qs('#delete-submit'); if (!btn) return;
-  const confirmEl = qs('#delete-confirm'), out = qs('#delete-result'), cancel = qs('#cancel-delete');
-
-  cancel?.addEventListener('click', ()=> go('profile.html'));
-
-  btn.addEventListener('click', async () => {
-    setMsg(out, '');
-    if ((confirmEl.value || '').trim() !== 'DELETE') { setMsg(out, 'Type DELETE to confirm', true); return; }
-    btn.disabled = true; btn.textContent = 'Deleting...';
     try {
-      const token = readToken();
-      const res = await del('/auth/me', token);
-      setMsg(out, res.message || 'Account deleted');
-      clearToken();
-      setTimeout(()=> go('index.html'), 900);
-    } catch (err) {
-      setMsg(out, err.message || 'Delete failed', true);
-    } finally {
-      btn.disabled = false; btn.textContent = 'Delete Account';
+      const res = await put("/auth/me",{ name,mobile },readToken());
+
+      if(res.user?.name) localStorage.setItem(USERNAME_KEY,res.user.name);
+
+      setMsg(out,"Updated ✓");
+      setTimeout(()=>location.reload(),700);
+
+    } catch(e){
+      setMsg(out,e.message,true);
     }
   });
-}
 
-/* Sidebar mobile toggle (keeps design same as index) */
-function enableMobileMenu() {
-  const menuBtn = qs('.menu-btn');
-  if (!menuBtn) return;
-  menuBtn.addEventListener('click', ()=> {
-    const sb = qs('.sidebar');
-    if (!sb) return;
-    sb.classList.toggle('open');
+  // Logout
+  qs("#logout-btn")?.addEventListener("click",()=>{
+    clearToken();
+    go("../index.html");
   });
 }
 
-/* Initialize page hooks */
-document.addEventListener('DOMContentLoaded', () => {
-  applyTheme();
+/* -----------------------------------------------------------------------------
+   DELETE ACCOUNT
+-----------------------------------------------------------------------------*/
+function hookDelete(){
+  const btn = qs("#delete-submit"); if(!btn) return;
+
+  btn.onclick = async ()=>{
+    const confirmValue = qs("#delete-confirm").value.trim();
+    const out = qs("#delete-result");
+
+    if(confirmValue !== "DELETE") return setMsg(out,"Type DELETE to confirm",true);
+
+    btn.disabled = true; btn.innerText = "Deleting...";
+
+    try {
+      await del("/auth/me",readToken());
+      clearToken();
+      go("../index.html");
+    } catch(e){
+      setMsg(out,e.message,true);
+    }
+
+    btn.disabled = false; btn.innerText = "Delete Account";
+  };
+}
+
+/* -----------------------------------------------------------------------------
+   TOOLS: PDF SUMMARY
+-----------------------------------------------------------------------------*/
+function hookSummarize(){
+  const btn = qs("#summarize-btn");
+  const fileInput = qs("#pdfFile");
+  const out = qs("#summarize-result");
+  const loader = qs("#loader");
+
+  if(!btn || !fileInput) return;
+
+  btn.onclick = async ()=>{
+    const f = fileInput.files?.[0];
+    if(!f) return setMsg(out,"Choose PDF file",true);
+
+    const fd = new FormData();
+    fd.append("file",f);
+
+    try {
+      showLoader(loader);
+
+      const res = await request("POST","/summarize",fd,readToken(),{ form:true });
+
+      if(res.summary)
+        out.innerHTML = `<pre>${escapeHtml(res.summary).replace(/\n/g,"<br>")}</pre>`;
+      else
+        out.innerHTML = `<pre>${escapeHtml(JSON.stringify(res,null,2))}</pre>`;
+
+    } catch(e){
+      setMsg(out,e.message,true);
+    }
+
+    hideLoader(loader);
+  };
+}
+
+/* -----------------------------------------------------------------------------
+   EXPLAIN TOPIC
+-----------------------------------------------------------------------------*/
+function hookExplain(){
+  const topicEl = qs("#explain-topic");
+  const btn = qs("#explain-btn") || qs("#explain-submit");
+  const out = qs("#explain-result");
+  const loader = qs("#loader");
+
+  if(!btn || !topicEl) return;
+
+  btn.onclick = async ()=>{
+    const topic = topicEl.value.trim();
+    if(!topic) return setMsg(out,"Enter topic",true);
+
+    try {
+      showLoader(loader);
+
+      const res = await post("/explain",{ topic },readToken());
+
+      if(res.explanation) out.innerHTML = explainFormatter(res.explanation);
+      else out.innerHTML = `<pre>${escapeHtml(JSON.stringify(res,null,2))}</pre>`;
+
+    } catch(e){
+      setMsg(out,e.message,true);
+    }
+
+    hideLoader(loader);
+  };
+}
+
+function explainFormatter(blocks){
+  if(!Array.isArray(blocks))
+    return `<pre>${escapeHtml(JSON.stringify(blocks,null,2))}</pre>`;
+
+  let html = "";
+  blocks.forEach(sec=>{
+    html += `<div class="explain-block">`;
+
+    if(sec.title) html += `<h3>${escapeHtml(sec.title)}</h3>`;
+    if(sec.paragraph) html += `<p>${escapeHtml(sec.paragraph)}</p>`;
+
+    if(sec.bullets){
+      html += "<ul>";
+      sec.bullets.forEach(b=> html += `<li>${escapeHtml(b)}</li>`);
+      html += "</ul>";
+    }
+
+    if(sec.examples){
+      html += "<h4>Examples</h4><ul>";
+      sec.examples.forEach(e=> html += `<li>${escapeHtml(e)}</li>`);
+      html += "</ul>";
+    }
+
+    if(sec.faqs){
+      html += "<h4>FAQs</h4>";
+      sec.faqs.forEach(f=>{
+        html += `<p><b>Q:</b> ${escapeHtml(f.q)}</p>`;
+        html += `<p><b>A:</b> ${escapeHtml(f.a)}</p>`;
+      });
+    }
+
+    html += "</div>";
+  });
+
+  return html;
+}
+
+/* -----------------------------------------------------------------------------
+   MAKE NOTES
+-----------------------------------------------------------------------------*/
+function hookMakeNotes(){
+  const btn = qs("#notes-submit");
+  if(!btn) return;
+
+  btn.onclick = async ()=>{
+    const text = qs("#notes-text").value.trim();
+    const out = qs("#notes-result");
+    const loader = qs("#loader");
+
+    if(!text) return setMsg(out,"Enter text",true);
+
+    try {
+      showLoader(loader);
+      const res = await post("/make-notes",{ text },readToken());
+      out.innerHTML = `<pre>${escapeHtml(res.notes || JSON.stringify(res,null,2))}</pre>`;
+    } catch(e){
+      setMsg(out,e.message,true);
+    }
+
+    hideLoader(loader);
+  };
+}
+
+/* -----------------------------------------------------------------------------
+   MCQ GENERATOR
+-----------------------------------------------------------------------------*/
+function hookMCQ(){
+  const btn = qs("#mcq-submit");
+  if(!btn) return;
+
+  btn.onclick = async ()=>{
+    const text = qs("#mcq-text").value.trim();
+    const count = Number(qs("#mcq-count").value) || 5;
+    const out = qs("#mcq-result");
+    const loader = qs("#loader");
+
+    if(!text) return setMsg(out,"Enter topic",true);
+
+    try {
+      showLoader(loader);
+
+      const res = await post("/make-mcq",{ text,count },readToken());
+
+      let html = "<ol>";
+      res.forEach(q=>{
+        html += `<li><b>${escapeHtml(q.question)}</b><ul>`;
+        q.options.forEach(o=> html += `<li>${escapeHtml(o)}</li>`);
+        html += "</ul></li>";
+      });
+      html += "</ol>";
+      
+      out.innerHTML = html;
+
+    } catch(e){
+      setMsg(out,e.message,true);
+    }
+
+    hideLoader(loader);
+  };
+}
+
+/* -----------------------------------------------------------------------------
+   QnA
+-----------------------------------------------------------------------------*/
+function hookQnA(){
+  const btn = qs("#qna-submit");
+  if(!btn) return;
+
+  btn.onclick = async ()=>{
+    const text = qs("#qna-question").value.trim();
+    const out = qs("#qna-result");
+    const loader = qs("#loader");
+
+    if(!text) return setMsg(out,"Enter question",true);
+
+    try {
+      showLoader(loader);
+      const res = await post("/qna",{ question:text },readToken());
+      out.innerHTML = `<p>${escapeHtml(res.answer)}</p>`;
+    } catch(e){
+      setMsg(out,e.message,true);
+    }
+
+    hideLoader(loader);
+  };
+}
+
+/* -----------------------------------------------------------------------------
+   NOTES HISTORY
+-----------------------------------------------------------------------------*/
+function hookNotesList(){
+  const cont = qs("#notes-list");
+  if(!cont) return;
+
+  (async ()=>{
+    try {
+      const res = await get("/notes",readToken());
+      if(!Array.isArray(res) || !res.length){ 
+        cont.innerHTML = "<p>No notes found</p>"; 
+        return;
+      }
+
+      cont.innerHTML = res.map(n=>`
+        <div class="note-card">
+          <strong>${escapeHtml(n.title || "Note")}</strong>
+          <p>${escapeHtml((n.content || n.summary || "").slice(0,200))}...</p>
+        </div>
+      `).join("");
+
+    } catch(e){
+      cont.innerHTML = `<p>${escapeHtml(e.message)}</p>`;
+    }
+  })();
+}
+
+/* -----------------------------------------------------------------------------
+   GLOBAL UI INIT
+-----------------------------------------------------------------------------*/
+function initGlobalUI(){
+  const t = readToken();
+  const name = localStorage.getItem(USERNAME_KEY) || "";
+
+  if(qs("#user-name-short")) qs("#user-name-short").innerText = name;
+
+  if(qs("#nav-login")) qs("#nav-login").style.display = t ? "none" : "inline-block";
+  if(qs("#nav-register")) qs("#nav-register").style.display = t ? "none" : "inline-block";
+  if(qs("#nav-profile")) qs("#nav-profile").style.display = t ? "inline-block" : "none";
+  if(qs("#nav-logout")) qs("#nav-logout").style.display = t ? "inline-block" : "none";
+
+  qs("#nav-logout")?.addEventListener("click",()=>{
+    clearToken();
+    go("../index.html");
+  });
+}
+
+function enableMobileMenu(){
+  qs(".menu-btn")?.addEventListener("click",()=>{
+    qs(".sidebar")?.classList.toggle("open");
+  });
+}
+
+/* -----------------------------------------------------------------------------
+   DOM READY INITIALIZATION
+-----------------------------------------------------------------------------*/
+document.addEventListener("DOMContentLoaded",()=>{
+
+  if(localStorage.getItem("theme")==="dark") document.body.classList.add("dark");
+
+  initGlobalUI();
   enableMobileMenu();
+
   hookRegister();
   hookLogin();
   hookProfile();
   hookDelete();
+
+  hookSummarize();
+  hookExplain();
+  hookMakeNotes();
+  hookMCQ();
+  hookQnA();
+  hookNotesList();
+
+  dbg("AI Study Frontend Loaded", { API_BASE });
 });
