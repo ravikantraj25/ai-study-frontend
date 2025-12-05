@@ -1,295 +1,411 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Study Assistant – Ultra Premium</title>
+<title>AI Study Assistant – Intelligent Learning</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-/* ---------- GLOBAL ---------- */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-    font-family: "Inter", sans-serif;
-    background: #0f0f17;
-    color: #fff;
-    overflow-x: hidden;
+/* ---------- VARIABLES & THEMES ---------- */
+:root {
+    /* Dark Theme (Default) */
+    --bg-color: #050507;
+    --text-main: #ffffff;
+    --text-muted: #a1a1aa;
+    --primary-gradient: linear-gradient(135deg, #6366f1, #3b82f6);
+    --secondary-gradient: linear-gradient(135deg, #8b5cf6, #ec4899);
+    --nav-bg: rgba(5, 5, 7, 0.75);
+    --card-bg: rgba(255, 255, 255, 0.03);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --card-hover-bg: rgba(255, 255, 255, 0.06);
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    --glow-opacity: 0.6;
 }
 
+[data-theme="light"] {
+    /* Light Theme Overrides */
+    --bg-color: #f8fafc;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --nav-bg: rgba(255, 255, 255, 0.75);
+    --card-bg: rgba(255, 255, 255, 0.6);
+    --card-border: rgba(0, 0, 0, 0.06);
+    --card-hover-bg: rgba(255, 255, 255, 0.9);
+    --shadow-color: rgba(148, 163, 184, 0.15);
+    --glow-opacity: 0.35;
+}
+
+/* ---------- GLOBAL RESET ---------- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: "Inter", sans-serif;
+    background: var(--bg-color);
+    color: var(--text-main);
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    line-height: 1.6;
+}
+
+/* ---------- NAVBAR ---------- */
 .navbar {
     width: 100%;
-    padding: 22px 40px;
+    padding: 18px 40px;
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 20;
+    z-index: 100;
     display: flex;
     justify-content: space-between;
-    backdrop-filter: blur(14px);
-    background: rgba(15,15,23,0.65);
-    border-bottom: 1px solid rgba(255,255,255,0.07);
+    align-items: center;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--card-border);
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .navbar .logo {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
     letter-spacing: -0.5px;
-    color: #fff;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-.navbar .nav-links {
+.navbar .nav-right {
     display: flex;
     align-items: center;
-    gap: 26px;
+    gap: 30px;
 }
 
-.navbar a {
-    color: #bdbdbd;
+.nav-links {
+    display: flex;
+    gap: 25px;
+}
+
+.nav-links a {
+    color: var(--text-muted);
     text-decoration: none;
     font-weight: 500;
-    transition: 0.25s;
+    font-size: 14px;
+    transition: color 0.2s;
 }
 
-.navbar a:hover {
-    color: #fff;
+.nav-links a:hover {
+    color: var(--text-main);
 }
 
-.btn-small {
-    padding: 8px 18px;
-    border-radius: 8px;
+/* Theme Toggle Button */
+.theme-toggle {
+    background: none;
     border: none;
-    background: linear-gradient(135deg, #7b00ff, #008fff);
-    color: #fff;
+    cursor: pointer;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s, transform 0.2s;
+}
+.theme-toggle:hover {
+    color: var(--text-main);
+    transform: rotate(15deg);
+}
+.theme-toggle svg { width: 20px; height: 20px; }
+
+/* Auth Buttons */
+.btn-small {
+    padding: 8px 20px;
+    border-radius: 6px;
+    border: none;
+    background: var(--text-main); /* Inverted for contrast */
+    color: var(--bg-color);
     cursor: pointer;
     transition: 0.25s;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
 }
+.btn-small:hover { opacity: 0.9; transform: translateY(-1px); }
 
-.btn-small:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,140,255,0.4);
+/* ---------- BACKGROUND ANIMATION ---------- */
+.glow-container {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
 }
-
-/* ---------- ANIMATION KEYFRAMES ---------- */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-25px); }
-  100% { transform: translateY(0px); }
-}
-
-/* ---------- BACKGROUND ORBS ---------- */
 .glow {
     position: absolute;
     width: 600px;
     height: 600px;
-    filter: blur(150px);
-    z-index: -1;
-    animation: float 8s ease-in-out infinite;
+    filter: blur(120px);
+    border-radius: 50%;
+    opacity: var(--glow-opacity);
+    transition: opacity 0.5s ease;
+    animation: float 10s ease-in-out infinite;
 }
-.glow1 { top: -200px; left: -150px; background: #7f00ff; }
-.glow2 { bottom: -200px; right: -150px; background: #00cfff; animation-delay: 1.2s; }
-.glow3 { top: 40%; left: 30%; background: #ff007b; animation-delay: 2s; }
+.glow1 { top: -100px; left: -100px; background: #4f46e5; }
+.glow2 { bottom: -100px; right: -100px; background: #06b6d4; animation-delay: 2s; }
+.glow3 { top: 40%; left: 40%; width: 400px; height: 400px; background: #ec4899; animation-delay: 4s; }
+
+@keyframes float {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(30px, -30px); }
+}
 
 /* ---------- HERO SECTION ---------- */
 .hero {
-    padding: 200px 20px 130px;
+    padding: 180px 20px 100px;
     text-align: center;
-    animation: fadeUp 1s ease-out forwards;
+    max-width: 900px;
+    margin: 0 auto;
 }
 
 .hero h1 {
-    font-size: 62px;
+    font-size: 64px;
     font-weight: 800;
+    letter-spacing: -1.5px;
     line-height: 1.1;
-    background: linear-gradient(45deg, #fff, #c3d4ff);
+    margin-bottom: 24px;
+    background: linear-gradient(to right, var(--text-main), var(--text-muted));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 .hero p {
-    font-size: 22px;
-    opacity: 0.85;
-    margin-top: 15px;
-    max-width: 800px;
-    margin-inline: auto;
-    animation: fadeUp 1.2s ease-out forwards;
+    font-size: 20px;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto 40px;
+    font-weight: 300;
 }
 
 .btn-primary {
-    margin-top: 35px;
-    padding: 16px 42px;
-    border-radius: 14px;
+    padding: 14px 36px;
+    border-radius: 50px;
     border: none;
-    background: linear-gradient(135deg, #5b00ff, #009dff);
+    background: var(--primary-gradient);
     color: #fff;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: 0.25s ease;
-    animation: fadeUp 1.4s ease-out forwards;
-    box-shadow: 0 10px 30px rgba(80,0,255,0.3);
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
 }
 
 .btn-primary:hover {
-    transform: translateY(-4px) scale(1.03);
-    box-shadow: 0 15px 45px rgba(0,0,255,0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 35px -5px rgba(99, 102, 241, 0.5);
 }
 
-/* ---------- FEATURES ---------- */
+/* ---------- FEATURES GRID ---------- */
 .features {
-    max-width: 1200px;
-    margin: 80px auto;
-    padding: 0 20px;
+    max-width: 1100px;
+    margin: 40px auto 120px;
+    padding: 0 24px;
 }
 
 .features h2 {
     text-align: center;
-    font-size: 38px;
+    font-size: 32px;
     font-weight: 700;
-    margin-bottom: 45px;
-    animation: fadeUp 1s ease-out forwards;
+    letter-spacing: -0.5px;
+    margin-bottom: 60px;
+    color: var(--text-main);
 }
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 32px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
 }
 
-/* ---------- FEATURE CARD ---------- */
+/* ---------- PROFESSIONAL CARD ---------- */
 .card {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
-    padding: 30px;
-    border-radius: 20px;
-    backdrop-filter: blur(20px);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    padding: 32px 24px;
+    border-radius: 16px;
     cursor: pointer;
-    transition: 0.25s ease;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-    transform-style: preserve-3d;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
 .card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.45);
-    border: 1px solid rgba(255,255,255,0.25);
+    background: var(--card-hover-bg);
+    border-color: rgba(99, 102, 241, 0.3);
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px -10px var(--shadow-color);
 }
 
 .card .icon {
-    font-size: 44px;
-    margin-bottom: 12px;
+    font-size: 32px;
+    margin-bottom: 20px;
+    display: inline-block;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(99, 102, 241, 0.1);
 }
 
 .card h3 {
-    font-size: 22px;
-    margin-bottom: 6px;
-    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: var(--text-main);
 }
 
 .card p {
-    opacity: 0.8;
-    font-size: 15px;
-    line-height: 1.7;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.6;
 }
 
 /* ---------- FOOTER ---------- */
 footer {
-    margin-top: 120px;
+    border-top: 1px solid var(--card-border);
     text-align: center;
-    padding: 20px;
-    opacity: 0.5;
-    font-size: 14px;
+    padding: 40px;
+    color: var(--text-muted);
+    font-size: 13px;
+    background: var(--bg-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .navbar { padding: 15px 20px; }
+    .hero h1 { font-size: 42px; }
+    .nav-links { display: none; } /* Simplified mobile view */
 }
 </style>
 </head>
 
 <body>
 
-<!-- NAVBAR -->
 <header class="navbar">
     <div class="logo">AI Study</div>
-    <div class="nav-links">
-        <a href="index.html">Home</a>
-        <a href="pages/summarize.html">Tools</a>
-
-        <a id="nav-login" href="pages/login.html">Login</a>
-        <a id="nav-register" href="pages/register.html">Register</a>
-        <a id="nav-profile" href="pages/profile.html" style="display:none;">Profile</a>
+    
+    <div class="nav-right">
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="pages/summarize.html">Tools</a>
+            <a id="nav-login" href="pages/login.html">Login</a>
+            <a id="nav-register" href="pages/register.html">Register</a>
+            <a id="nav-profile" href="pages/profile.html" style="display:none;">Profile</a>
+        </div>
 
         <button id="nav-logout" class="btn-small" style="display:none;">Logout</button>
+
+        <button class="theme-toggle" id="theme-btn" aria-label="Toggle Dark Mode">
+            <svg id="moon-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            <svg id="sun-icon" style="display:none" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+        </button>
     </div>
 </header>
 
-<!-- ANIMATED BACKGROUND -->
-<div class="glow glow1"></div>
-<div class="glow glow2"></div>
-div class="glow glow3"></div>
+<div class="glow-container">
+    <div class="glow glow1"></div>
+    <div class="glow glow2"></div>
+    <div class="glow glow3"></div>
+</div>
 
-<!-- HERO -->
 <section class="hero">
-    <h1>AI Study Assistant</h1>
-    <p>The smartest way to study — summaries, notes, explanations, and MCQs crafted instantly by AI.</p>
-    <button class="btn-primary" onclick="location.href='pages/summarize.html'">Start Learning →</button>
+    <h1>Master your subjects<br>with AI precision.</h1>
+    <p>Summaries, structured notes, and intelligent explanations generated in seconds. The ultimate toolkit for the modern student.</p>
+    <button class="btn-primary" onclick="location.href='pages/summarize.html'">Get Started Free</button>
 </section>
 
-<!-- FEATURES -->
 <section class="features">
-    <h2>Premium AI Tools — Built for Students Who Want Excellence</h2>
+    <h2>Intelligent Tools</h2>
 
     <div class="grid">
-
         <div class="card" onclick="location.href='pages/summarize.html'">
             <div class="icon">📄</div>
-            <h3>Summarize PDFs</h3>
-            <p>Get crystal-clear summaries from full textbooks or class PDFs.</p>
+            <h3>PDF Summarizer</h3>
+            <p>Distill complex research papers and textbooks into concise, digestible key points.</p>
         </div>
 
         <div class="card" onclick="location.href='pages/make-notes.html'">
             <div class="icon">📝</div>
-            <h3>Make Notes</h3>
-            <p>Convert long text into clean, structured notes.</p>
+            <h3>Smart Notes</h3>
+            <p>Convert messy thoughts or transcripts into structured, exam-ready bullet points.</p>
         </div>
 
         <div class="card" onclick="location.href='pages/mcq.html'">
-            <div class="icon">❓</div>
+            <div class="icon">⚡</div>
             <h3>MCQ Generator</h3>
-            <p>Create intelligent MCQs instantly.</p>
+            <p>Test your knowledge immediately with AI-crafted quizzes based on your material.</p>
         </div>
 
         <div class="card" onclick="location.href='pages/explain.html'">
-            <div class="icon">💡</div>
-            <h3>Explain Topic</h3>
-            <p>Teacher-style explanation with examples.</p>
+            <div class="icon">🧠</div>
+            <h3>Deep Explain</h3>
+            <p>Stuck on a concept? Get a tutor-style explanation with real-world analogies.</p>
         </div>
-
     </div>
 </section>
 
 <footer>
-    © 2025 AI Study Assistant — Crafted with premium detail and excellence.
+    © 2025 AI Study Assistant. All rights reserved.
 </footer>
 
 <script>
-// ---------- NAVBAR AUTH LOGIC ----------
+// ---------- AUTH LOGIC ----------
 const token = localStorage.getItem("ai_study_token");
+const loginBtn = document.getElementById("nav-login");
+const registerBtn = document.getElementById("nav-register");
+const profileBtn = document.getElementById("nav-profile");
+const logoutBtn = document.getElementById("nav-logout");
 
 if (token) {
-    document.getElementById("nav-login").style.display = "none";
-    document.getElementById("nav-register").style.display = "none";
-    document.getElementById("nav-profile").style.display = "block";
-    document.getElementById("nav-logout").style.display = "inline-block";
+    if(loginBtn) loginBtn.style.display = "none";
+    if(registerBtn) registerBtn.style.display = "none";
+    if(profileBtn) profileBtn.style.display = "block";
+    if(logoutBtn) logoutBtn.style.display = "block";
 }
 
-document.getElementById("nav-logout")?.addEventListener("click", () => {
+logoutBtn?.addEventListener("click", () => {
     localStorage.removeItem("ai_study_token");
-    location.reload();
+    window.location.reload();
 });
+
+// ---------- DARK/LIGHT MODE LOGIC ----------
+const htmlEl = document.documentElement;
+const themeBtn = document.getElementById("theme-btn");
+const sunIcon = document.getElementById("sun-icon");
+const moonIcon = document.getElementById("moon-icon");
+
+// 1. Check LocalStorage or System Preference
+const currentTheme = localStorage.getItem("theme") || 
+                     (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+
+// 2. Apply initial theme
+setTheme(currentTheme);
+
+// 3. Toggle Event Listener
+themeBtn.addEventListener("click", () => {
+    const newTheme = htmlEl.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+});
+
+// Helper function to set theme
+function setTheme(theme) {
+    htmlEl.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+    
+    // Icon toggle
+    if (theme === "dark") {
+        sunIcon.style.display = "none";
+        moonIcon.style.display = "block";
+    } else {
+        sunIcon.style.display = "block";
+        moonIcon.style.display = "none";
+    }
+}
 </script>
 
 </body>
