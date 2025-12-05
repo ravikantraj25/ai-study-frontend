@@ -5,6 +5,16 @@
 <title>Make Notes — AI Study</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="../styles.css">
+<style>
+  .page-wrapper { max-width:920px; margin:36px auto; }
+  .card{ padding:18px; border-radius:14px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); box-shadow:0 10px 30px rgba(2,6,23,0.55); }
+  textarea { width:100%; min-height:200px; padding:14px; border-radius:12px; background:transparent; border:1px solid rgba(255,255,255,0.06); color:inherit; resize:vertical }
+  .btn-primary{ padding:10px 16px;border-radius:12px;border:none;background:linear-gradient(90deg,#7f5af0,#5eead4);color:#021; font-weight:700; cursor:pointer }
+  .loader{ width:16px;height:16px;border-radius:50%; border:3px solid rgba(255,255,255,0.1); border-top-color:#5eead4; animation:spin 900ms linear infinite; display:inline-block }
+  .hidden{ display:none }
+  .result-card{ margin-top:18px; padding:12px; border-radius:12px; background: rgba(255,255,255,0.02) }
+  @keyframes spin{ to{ transform:rotate(360deg) } }
+</style>
 </head>
 <body>
 <aside class="sidebar" id="sidebar">
@@ -24,18 +34,15 @@
 <main class="content-with-sidebar">
   <div class="page-wrapper container">
     <h1 class="h-gradient">Make Notes</h1>
-    <p class="center mt-18">Paste text or upload content to create structured study notes.</p>
+    <p class="center mt-8">Paste text or your summary and let AI convert it into neat, structured notes.</p>
 
     <div class="card mt-18">
-      <textarea id="notes-text" rows="8" placeholder="Paste your text or write topic here..." style="width:100%;padding:12px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:#fff"></textarea>
-      <div style="margin-top:12px;display:flex;gap:12px;align-items:center;">
-        <select id="notes-format" style="padding:10px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:#fff">
-          <option value="concise">Concise</option>
-          <option value="bullet">Bullet points</option>
-          <option value="detailed">Detailed</option>
-        </select>
+      <textarea id="notes-text" placeholder="Paste text or summary here..."></textarea>
+      <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
         <button id="notes-submit" class="btn-primary">Create Notes</button>
-        <span id="notes-loader" class="loader hidden"></span>
+        <span id="notes-loader" class="loader hidden" aria-hidden="true"></span>
+        <div style="flex:1"></div>
+        <small style="opacity:0.7">Notes are saved to your account (if logged in).</small>
       </div>
     </div>
 
@@ -43,25 +50,50 @@
   </div>
 </main>
 
-<script src="../app.js"></script>
 <script>
-document.getElementById('notes-submit').addEventListener('click', async ()=>{
-  const text = document.getElementById('notes-text').value.trim();
-  const format = document.getElementById('notes-format').value;
-  const out = document.getElementById('notes-result'); const loader = document.getElementById('notes-loader');
-  if (!text) { out.innerText = 'Enter text'; return; }
-  loader.classList.remove('hidden'); out.innerHTML='';
-  try{
-    const token = localStorage.getItem('ai_study_token');
-    const res = await fetch((window.API_BASE||'') + '/make-notes', {
-      method:'POST', headers: { 'Content-Type':'application/json', ...(token?{Authorization:'Bearer '+token}:{}) }, body: JSON.stringify({ text, format })
-    });
-    const json = await res.json();
-    const notes = json.notes || json.summary || JSON.stringify(json, null,2);
-    out.innerHTML = '<h3>Notes</h3><p>' + String(notes).replace(/\n/g,'<br>') + '</p>';
-  } catch(err) { out.innerText = 'Error: ' + (err.message||err) }
-  finally{ loader.classList.add('hidden') }
-});
+(() => {
+  const API = window.API_BASE || "";
+  const tokenKey = "ai_study_token";
+  const btn = document.getElementById("notes-submit");
+  const loader = document.getElementById("notes-loader");
+  const out = document.getElementById("notes-result");
+  const textEl = document.getElementById("notes-text");
+
+  function show(l){ l.classList.remove("hidden"); }
+  function hide(l){ l.classList.add("hidden"); }
+  function esc(t){ return String(t||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m])); }
+
+  btn.addEventListener("click", async ()=>{
+    out.innerHTML = "";
+    const text = (textEl.value || "").trim();
+    if(!text){ out.innerHTML = "<p style='color:#ff4d6d'>Enter text to create notes.</p>"; return; }
+    show(loader); btn.disabled = true;
+
+    try {
+      const headers = { "Content-Type": "application/json" };
+      const token = localStorage.getItem(tokenKey);
+      if(token) headers["Authorization"] = "Bearer " + token;
+
+      const resp = await fetch((API||"") + "/make-notes", { method:"POST", headers, body: JSON.stringify({ text }) });
+      const ct = (resp.headers.get("content-type") || "").toLowerCase();
+
+      let data;
+      if(ct.includes("json")) {
+        data = await resp.json().catch(()=> ({ notes: resp.text() }));
+      } else {
+        data = { notes: await resp.text() };
+      }
+
+      const notes = data.notes || data.note || JSON.stringify(data, null, 2);
+      out.innerHTML = "<h3>Generated Notes</h3><pre style='white-space:pre-wrap;line-height:1.6'>"+esc(notes)+"</pre>";
+
+    } catch (err) {
+      out.innerHTML = "<p style='color:#ff4d6d'>Error: "+esc(err.message||err)+"</p>";
+    } finally {
+      hide(loader); btn.disabled = false;
+    }
+  });
+})();
 </script>
 </body>
 </html>

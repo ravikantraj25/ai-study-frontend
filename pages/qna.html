@@ -5,6 +5,16 @@
 <title>QnA — AI Study</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="../styles.css">
+<style>
+  .page-wrapper { max-width:920px; margin:36px auto; }
+  .card{ padding:18px; border-radius:14px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); box-shadow:0 10px 30px rgba(2,6,23,0.55); }
+  input[type="text"]{ width:100%; padding:12px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.06); color:inherit }
+  .btn-primary{ padding:10px 16px;border-radius:12px;border:none;background:linear-gradient(90deg,#7f5af0,#5eead4);color:#021; font-weight:700; cursor:pointer }
+  .loader{ width:16px;height:16px;border-radius:50%; border:3px solid rgba(255,255,255,0.08); border-top-color:#7f5af0; animation:spin 900ms linear infinite; display:inline-block }
+  .hidden{ display:none }
+  .result-card{ margin-top:18px; padding:12px; border-radius:12px; background: rgba(255,255,255,0.02) }
+  @keyframes spin{ to{ transform:rotate(360deg) } }
+</style>
 </head>
 <body>
 <aside class="sidebar" id="sidebar">
@@ -24,33 +34,62 @@
 <main class="content-with-sidebar">
   <div class="page-wrapper container">
     <h1 class="h-gradient">Ask Questions</h1>
-    <p class="center mt-18">Ask specific questions — get concise answers with references if available.</p>
+    <p class="center mt-8">Ask a question and get concise AI answers with suggested follow-ups.</p>
+
     <div class="card mt-18">
-      <input id="qna-question" placeholder="Ask anything..." style="width:100%;padding:12px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:#fff">
-      <div style="margin-top:12px;display:flex;gap:12px;">
+      <input id="qna-question" type="text" placeholder="Ask anything..." />
+      <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
         <button id="qna-submit" class="btn-primary">Ask</button>
-        <span id="qna-loader" class="loader hidden"></span>
+        <span id="qna-loader" class="loader hidden" aria-hidden="true"></span>
+        <div style="flex:1"></div>
+        <small style="opacity:0.7">Answers are generated from AI — verify for high-stakes use.</small>
       </div>
     </div>
+
     <div id="qna-result" class="result-card"></div>
   </div>
 </main>
 
-<script src="../app.js"></script>
 <script>
-document.getElementById('qna-submit').addEventListener('click', async ()=>{
-  const q = document.getElementById('qna-question').value.trim(), out = document.getElementById('qna-result'), loader = document.getElementById('qna-loader');
-  if (!q) { out.innerText='Enter a question'; return; }
-  loader.classList.remove('hidden'); out.innerHTML='';
-  try{
-    const token = localStorage.getItem('ai_study_token');
-    const res = await fetch((window.API_BASE||'') + '/qna', { method:'POST', headers:{ 'Content-Type':'application/json', ...(token?{Authorization:'Bearer '+token}:{}) }, body: JSON.stringify({ question: q })});
-    const json = await res.json();
-    const ans = json.answer || json.text || JSON.stringify(json,null,2);
-    out.innerHTML = '<h3>Answer</h3><p>' + String(ans).replace(/\n/g,'<br>') + '</p>';
-  }catch(err){ out.innerText = 'Error: ' + (err.message||err) }
-  finally{ loader.classList.add('hidden') }
-});
+(() => {
+  const API = window.API_BASE || "";
+  const tokenKey = "ai_study_token";
+  const btn = document.getElementById("qna-submit");
+  const loader = document.getElementById("qna-loader");
+  const out = document.getElementById("qna-result");
+  const qEl = document.getElementById("qna-question");
+
+  function show(l){ l.classList.remove("hidden"); }
+  function hide(l){ l.classList.add("hidden"); }
+  function esc(t){ return String(t||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m])); }
+
+  btn.addEventListener("click", async ()=>{
+    out.innerHTML = "";
+    const q = (qEl.value||"").trim();
+    if(!q){ out.innerHTML = "<p style='color:#ff4d6d'>Please enter a question.</p>"; return; }
+    show(loader); btn.disabled = true;
+
+    try {
+      const headers = { "Content-Type": "application/json" };
+      const token = localStorage.getItem(tokenKey);
+      if(token) headers["Authorization"] = "Bearer " + token;
+
+      const resp = await fetch((API||"") + "/qna", { method:"POST", headers, body: JSON.stringify({ question: q }) });
+      const ct = (resp.headers.get("content-type") || "").toLowerCase();
+      let data;
+      if(ct.includes("json")) data = await resp.json().catch(()=> null);
+      else data = { answer: await resp.text() };
+
+      const ans = (data && (data.answer || data.text)) || JSON.stringify(data, null, 2);
+      out.innerHTML = "<h3>Answer</h3><div style='margin-top:8px;line-height:1.6'>"+esc(ans).replace(/\n/g,"<br>")+"</div>";
+
+    } catch (err) {
+      out.innerHTML = "<p style='color:#ff4d6d'>Error: "+esc(err.message||err)+"</p>";
+    } finally {
+      hide(loader); btn.disabled = false;
+    }
+  });
+})();
 </script>
 </body>
 </html>

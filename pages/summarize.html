@@ -5,10 +5,20 @@
 <title>Summarize PDF — AI Study</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="../styles.css">
+<style>
+  /* premium small-page overrides */
+  .page-wrapper { max-width:960px; margin:32px auto; }
+  .card { background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border-radius:16px; padding:20px; box-shadow:0 6px 20px rgba(2,6,23,0.5); }
+  .h-gradient { background: linear-gradient(90deg,#7f5af0,#5eead4); -webkit-background-clip:text; color:transparent; font-size:28px; }
+  .btn-primary{ padding:10px 16px;border-radius:12px;border:none;background:linear-gradient(90deg,#7f5af0,#5eead4);color:#021; font-weight:700; cursor:pointer }
+  .input-file { width:100%; padding:12px; border-radius:10px; background:transparent; border:1px dashed rgba(255,255,255,0.06); color:inherit }
+  .loader{ width:18px;height:18px;border-radius:50%; border:3px solid rgba(255,255,255,0.12); border-top-color: #7f5af0; display:inline-block; vertical-align:middle; animation:spin 900ms linear infinite }
+  .hidden{ display:none }
+  .result-card{ margin-top:18px; padding:14px; border-radius:12px; background: rgba(255,255,255,0.02); min-height:80px }
+  @keyframes spin{ to{ transform:rotate(360deg) } }
+</style>
 </head>
 <body>
-
-<!-- sidebar -->
 <aside class="sidebar" id="sidebar">
   <div class="brand">AI Study</div>
   <a href="../index.html">Home</a>
@@ -23,17 +33,18 @@
   <a href="delete-account.html">Delete Account</a>
 </aside>
 
-<!-- page content -->
 <main class="content-with-sidebar">
   <div class="page-wrapper container">
     <h1 class="h-gradient">Summarize PDF</h1>
-    <p class="center mt-18">Upload a PDF and get a smart AI summary with key-points and suggested MCQs.</p>
+    <p class="center mt-8">Upload a PDF and get a concise AI-generated summary and key points.</p>
 
-    <div class="upload-card mt-18 card">
-      <input id="pdfFile" type="file" accept="application/pdf" class="input-file">
-      <div class="mt-18">
-        <button class="btn-primary" onclick="summarizePDF()">Generate Summary</button>
-        <span id="summarize-loader" class="loader hidden"></span>
+    <div class="card mt-18">
+      <input id="pdfFile" type="file" accept="application/pdf" class="input-file" />
+      <div style="display:flex;gap:12px;align-items:center;margin-top:14px">
+        <button id="summarize-btn" class="btn-primary">Generate Summary</button>
+        <span id="summarize-loader" class="loader hidden" aria-hidden="true"></span>
+        <div style="flex:1"></div>
+        <small style="opacity:0.7">Max file size: as per backend</small>
       </div>
     </div>
 
@@ -41,35 +52,58 @@
   </div>
 </main>
 
-<script src="../app.js"></script>
 <script>
-  // hooking function used earlier - ensure summarizePDF exists (app.js may already include)
-  async function summarizePDF(){
-    const fileInput = document.getElementById('pdfFile');
-    const loader = document.getElementById('summarize-loader');
-    const out = document.getElementById('summarize-result');
-    out.innerHTML = '';
-    if (!fileInput.files || fileInput.files.length===0){ out.innerText='Choose a PDF file.'; return; }
-    loader.classList.remove('hidden');
+/* Self-contained summarize script - premium UI */
+(async ()=>{
+  const API = window.API_BASE || "";
+  const tokenKey = "ai_study_token";
+
+  const fileEl = document.getElementById("pdfFile");
+  const btn = document.getElementById("summarize-btn");
+  const loader = document.getElementById("summarize-loader");
+  const out = document.getElementById("summarize-result");
+
+  function show(l){ l.classList.remove("hidden"); }
+  function hide(l){ l.classList.add("hidden"); }
+  function esc(t){ return String(t||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m])); }
+
+  btn.addEventListener("click", async ()=>{
+    out.innerHTML = ""; 
+    if(!fileEl.files || fileEl.files.length===0){ out.innerHTML = "<p style='color:#ff4d6d'>Choose a PDF file.</p>"; return; }
+    const f = fileEl.files[0];
+    show(loader); btn.disabled = true;
+
     try {
-      const form = new FormData();
-      form.append('file', fileInput.files[0]);
-      const token = localStorage.getItem('ai_study_token');
-      const res = await fetch((window.API_BASE || '') + '/summarize', {
-        method:'POST',
-        headers: token ? { 'Authorization': 'Bearer ' + token } : {},
-        body: form
-      });
-      const json = await res.json();
-      // format response intelligently
-      let text = '';
-      if (Array.isArray(json)) text = json.map(r=> r.summary || JSON.stringify(r)).join('\n\n');
-      else text = json.summary || json.text || JSON.stringify(json, null, 2);
-      out.innerHTML = '<h3>Summary</h3><p>' + (String(text).replace(/\n/g, '<br>')) + '</p>';
+      const fd = new FormData();
+      fd.append("file", f);
+
+      const headers = {};
+      const token = localStorage.getItem(tokenKey);
+      if(token) headers["Authorization"] = "Bearer " + token;
+
+      const resp = await fetch((API||"") + "/summarize", { method:"POST", headers, body: fd });
+      const ct = (resp.headers.get("content-type") || "").toLowerCase();
+
+      let data;
+      if(ct.includes("json")){
+        try { data = await resp.json(); } catch { data = { summary: await resp.text() }; }
+      } else {
+        data = { summary: await resp.text() };
+      }
+
+      let text = "";
+      if (Array.isArray(data)) text = data.map(x=> x.summary || JSON.stringify(x)).join("\n\n");
+      else text = data.summary || data.text || JSON.stringify(data, null, 2);
+
+      out.innerHTML = "<h3 style='margin-top:6px'>Summary</h3><div style='margin-top:8px;line-height:1.6'>"+esc(text).replace(/\n/g,"<br>")+"</div>";
+
     } catch (err) {
-      out.innerText = 'Error: ' + (err.message || err);
-    } finally { loader.classList.add('hidden'); }
-  }
+      out.innerHTML = "<p style='color:#ff4d6d'>Error: "+esc(err.message || err)+"</p>";
+    } finally {
+      hide(loader); btn.disabled = false;
+    }
+  });
+})();
 </script>
 </body>
 </html>

@@ -1,166 +1,125 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <title>Explain Topic — AI Study</title>
-    <link rel="stylesheet" href="../styles.css">
-
-    <style>
-        /* PAGE TITLE */
-        .page-heading {
-            font-size: 42px;
-            font-weight: 800;
-            margin-bottom: 10px;
-            color: #fff;
-        }
-
-        .sub-heading {
-            opacity: 0.8;
-            margin-bottom: 35px;
-        }
-
-        /* Glass form card */
-        .glass-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.08);
-            padding: 25px;
-            border-radius: 16px;
-            backdrop-filter: blur(18px);
-            width: 100%;
-            max-width: 850px;
-            margin-bottom: 30px;
-        }
-
-        .glass-card label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 18px;
-            opacity: 0.85;
-        }
-
-        .glass-card input,
-        .glass-card select {
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            border: none;
-            margin-bottom: 18px;
-            background: rgba(255,255,255,0.08);
-            color: #fff;
-            font-size: 16px;
-        }
-
-        .glass-card input:focus,
-        .glass-card select:focus {
-            outline: 2px solid #a583ff;
-        }
-
-        /* Explanation Output Card */
-        .explain-box {
-            background: rgba(255,255,255,0.03);
-            padding: 25px;
-            border-radius: 16px;
-            border-left: 5px solid #ff7272;
-            width: 100%;
-            max-width: 850px;
-            margin-top: 15px;
-            color: #fff;
-        }
-
-        .explain-box h3 {
-            color: #ff8080;
-            margin-bottom: 12px;
-        }
-
-        /* Container Proper Layout */
-        .page-container {
-            margin-left: 260px; /* space for sidebar */
-            padding: 60px;
-        }
-
-        @media(max-width: 900px) {
-            .page-container {
-                margin-left: 0 !important;
-                padding: 20px;
-            }
-        }
-    </style>
-
+<meta charset="utf-8">
+<title>Explain Topic — AI Study</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  .page-wrapper { max-width:920px; margin:36px auto; }
+  .card{ padding:18px; border-radius:14px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); box-shadow:0 10px 30px rgba(2,6,23,0.55); }
+  input[type="text"]{ width:100%; padding:12px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.06); color:inherit }
+  .btn-primary{ padding:10px 16px;border-radius:12px;border:none;background:linear-gradient(90deg,#7f5af0,#5eead4);color:#021; font-weight:700; cursor:pointer }
+  .loader{ width:16px;height:16px;border-radius:50%; border:3px solid rgba(255,255,255,0.08); border-top-color:#5eead4; animation:spin 900ms linear infinite; display:inline-block }
+  .hidden{ display:none }
+  .explain-block{ margin-bottom:14px; padding:10px; border-radius:10px; background:rgba(0,0,0,0.02) }
+  @keyframes spin{ to{ transform:rotate(360deg) } }
+</style>
 </head>
 <body>
+<aside class="sidebar" id="sidebar">
+  <div class="brand">AI Study</div>
+  <a href="../index.html">Home</a>
+  <a href="summarize.html">Summarize PDF</a>
+  <a href="make-notes.html">Make Notes</a>
+  <a href="mcq.html">Make MCQ</a>
+  <a href="explain.html" class="active">Explain</a>
+  <a href="qna.html">QnA</a>
+  <a href="notes.html">Notes History</a>
+  <div class="spacer"></div>
+  <a href="profile.html">Update Profile</a>
+  <a href="delete-account.html">Delete Account</a>
+</aside>
 
-<!-- Sidebar -->
-<button class="menu-btn" onclick="toggleSidebar()">☰</button>
+<main class="content-with-sidebar">
+  <div class="page-wrapper container">
+    <h1 class="h-gradient">Explain Topic</h1>
+    <p class="center mt-8">Get structured explanations with bullets, examples and FAQs.</p>
 
-<div class="sidebar" id="sidebar">
-    <a href="../index.html">🏠 Home</a>
-    <a href="summarize.html">📄 Summarize PDF</a>
-    <a href="make-notes.html">📝 Make Notes</a>
-    <a href="mcq.html">❓ Make MCQs</a>
-    <a href="explain.html" class="active">💡 Explain Topic</a>
-    <a href="qna.html">💬 QnA</a>
-    <a href="notes.html">📚 Notes History</a>
-    <a href="#" onclick="toggleTheme(); return false;">🌙 Toggle Dark Mode</a>
-</div>
-
-<!-- MAIN PAGE CONTENT -->
-<div class="page-container">
-
-    <h2 class="page-heading">Explain Topic</h2>
-    <p class="sub-heading">Type a topic and choose the depth.</p>
-
-    <!-- Glass Input Card -->
-    <div class="glass-card">
-        <label>Topic</label>
-        <input id="explain-topic" type="text" placeholder="e.g., What is photosynthesis?">
-
-        <label>Explanation Depth</label>
-        <select id="explain-level">
-            <option value="short">Short (summary)</option>
-            <option value="medium">Medium (details)</option>
-            <option value="detailed">Detailed (examples)</option>
-        </select>
-
-        <button id="explain-submit" class="btn-primary">Explain</button>
+    <div class="card mt-18">
+      <input id="explain-topic" type="text" placeholder="Enter topic (e.g. Statically typed vs Dynamically typed languages)" />
+      <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
+        <button id="explain-btn" class="btn-primary">Explain</button>
+        <span id="explain-loader" class="loader hidden" aria-hidden="true"></span>
+      </div>
     </div>
 
-    <div id="loader" class="loader hidden"></div>
+    <div id="explain-result" class="result-card"></div>
+  </div>
+</main>
 
-    <!-- Output Box -->
-    <div class="explain-box">
-        <h3>Explanation</h3>
-        <div id="explain-result">Nothing yet...</div>
-    </div>
-
-</div>
-
-<script src="../app.js"></script>
 <script>
-/* CLEAN OUTPUT FIX */
-function cleanExplainOutput(data) {
-    if (!data) return "No explanation.";
+(() => {
+  const API = window.API_BASE || "";
+  const tokenKey = "ai_study_token";
+  const topicEl = document.getElementById("explain-topic");
+  const btn = document.getElementById("explain-btn");
+  const loader = document.getElementById("explain-loader");
+  const out = document.getElementById("explain-result");
 
-    let exp = data.explanation || data.text || data.answer || data;
+  function show(l){ l.classList.remove("hidden"); }
+  function hide(l){ l.classList.add("hidden"); }
+  function esc(t){ return String(t||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m])); }
 
-    if (Array.isArray(exp)) {
-        return "<ul>" + exp.map(x => `<li>${x}</li>`).join("") + "</ul>";
+  function explainFormatter(blocks){
+    if(!Array.isArray(blocks)) return "<pre>"+esc(JSON.stringify(blocks,null,2))+"</pre>";
+    let html = "";
+    blocks.forEach(sec=>{
+      html += "<div class='explain-block'>";
+      if(sec.title) html += "<h3>"+esc(sec.title)+"</h3>";
+      if(sec.paragraph) html += "<p>"+esc(sec.paragraph)+"</p>";
+      if(sec.bullets && Array.isArray(sec.bullets)){
+        html += "<ul>";
+        sec.bullets.forEach(b=> html += "<li>"+esc(b)+"</li>");
+        html += "</ul>";
+      }
+      if(sec.examples && Array.isArray(sec.examples)){
+        html += "<h4>Examples</h4><ul>";
+        sec.examples.forEach(e=> html += "<li>"+esc(e)+"</li>");
+        html += "</ul>";
+      }
+      if(sec.faqs && Array.isArray(sec.faqs)){
+        html += "<h4>FAQs</h4>";
+        sec.faqs.forEach(f=>{
+          html += "<p><strong>Q:</strong> "+esc(f.q)+"</p>";
+          html += "<p><strong>A:</strong> "+esc(f.a)+"</p>";
+        });
+      }
+      html += "</div>";
+    });
+    return html;
+  }
+
+  btn.addEventListener("click", async ()=>{
+    out.innerHTML = "";
+    const topic = (topicEl.value||"").trim();
+    if(!topic){ out.innerHTML = "<p style='color:#ff4d6d'>Enter a topic.</p>"; return; }
+    show(loader); btn.disabled = true;
+
+    try {
+      const headers = { "Content-Type":"application/json" };
+      const token = localStorage.getItem(tokenKey);
+      if(token) headers["Authorization"] = "Bearer " + token;
+
+      const resp = await fetch((API||"") + "/explain", { method:"POST", headers, body: JSON.stringify({ topic }) });
+      const ct = (resp.headers.get("content-type")||"").toLowerCase();
+      let data;
+      if(ct.includes("json")) data = await resp.json().catch(()=> null);
+      else data = { explanation: await resp.text() };
+
+      if(data && data.explanation) {
+        out.innerHTML = explainFormatter(data.explanation);
+      } else {
+        out.innerHTML = "<pre>"+esc(JSON.stringify(data,null,2))+"</pre>";
+      }
+
+    } catch (err) {
+      out.innerHTML = "<p style='color:#ff4d6d'>Error: "+esc(err.message||err)+"</p>";
+    } finally {
+      hide(loader); btn.disabled = false;
     }
-
-    if (typeof exp === "object") {
-        let html = "";
-        for (let key in exp) {
-            html += `<h4 style="color:#a583ff;margin-top:12px">${key}</h4>`;
-            if (Array.isArray(exp[key])) {
-                html += "<ul>" + exp[key].map(i => `<li>${i}</li>`).join("") + "</ul>";
-            } else {
-                html += `<p>${exp[key]}</p>`;
-            }
-        }
-        return html;
-    }
-
-    return String(exp).replace(/\n/g, "<br>");
-}
+  });
+})();
 </script>
-
 </body>
 </html>
