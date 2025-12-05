@@ -7,61 +7,161 @@
 <link rel="stylesheet" href="../styles.css">
 
 <style>
-  .page-wrapper { max-width:960px; margin:32px auto; }
-  .card { 
-    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); 
-    border-radius:16px; 
-    padding:20px; 
-    box-shadow:0 6px 20px rgba(2,6,23,0.5); 
+  .page-wrapper { max-width:960px; margin:36px auto; }
+  
+  /* Upload Card */
+  .upload-card {
+    padding:30px;
+    border-radius:16px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    border: 1px dashed rgba(255,255,255,0.2);
+    text-align: center;
+    transition: 0.2s;
   }
-  .h-gradient { 
-    background: linear-gradient(90deg,#7f5af0,#5eead4); 
-    -webkit-background-clip:text; 
-    color:transparent; 
-    font-size:28px; 
+  .upload-card:hover { border-color: #7f5af0; background: rgba(127,90,240,0.05); }
+
+  input[type="file"] { display:none; }
+  
+  .file-label {
+    display:inline-block;
+    padding:12px 24px;
+    background:rgba(255,255,255,0.1);
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+    margin-bottom:12px;
+    transition:0.2s;
+    border: 1px solid rgba(255,255,255,0.1);
   }
-  .btn-primary{ 
-    padding:10px 16px;
+  .file-label:hover { background: #7f5af0; color:#fff; border-color:transparent; }
+
+  .btn-primary {
+    padding:12px 24px;
     border-radius:12px;
     border:none;
     background:linear-gradient(90deg,#7f5af0,#5eead4);
-    color:#021; 
-    font-weight:700; 
-    cursor:pointer 
+    color:#021;
+    font-weight:700;
+    cursor:pointer;
+    font-size: 1rem;
+    transition: transform 0.1s;
   }
-  .input-file { 
-    width:100%; 
-    padding:12px; 
-    border-radius:10px; 
-    background:transparent; 
-    border:1px dashed rgba(255,255,255,0.06); 
-    color:inherit 
+  .btn-primary:active { transform: scale(0.98); }
+
+  /* ----------------------- */
+  /* SUMMARY DASHBOARD UI    */
+  /* ----------------------- */
+
+  .summary-header {
+    text-align: center;
+    margin-bottom: 30px;
+    animation: fadeIn 0.5s ease;
   }
-  .loader{ 
-    width:18px;
-    height:18px;
-    border-radius:50%; 
-    border:3px solid rgba(255,255,255,0.12); 
-    border-top-color: #7f5af0; 
+  .doc-emoji { font-size: 3.5rem; margin-bottom: 10px; display:block; }
+  
+  .doc-title { 
+    font-size: 2rem; 
+    font-weight: 800; 
+    background: linear-gradient(90deg,#fff, #a5b4fc); 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; 
+    margin-bottom: 8px;
+  }
+  
+  .doc-type { 
     display:inline-block; 
-    vertical-align:middle; 
-    animation:spin 900ms linear infinite 
+    font-size: 0.75rem; 
+    text-transform:uppercase; 
+    letter-spacing:1px; 
+    font-weight: 700;
+    background:rgba(255,255,255,0.1); 
+    padding:6px 14px; 
+    border-radius:20px; 
+    color:rgba(255,255,255,0.8); 
   }
-  .hidden{ display:none }
-  .result-card{ 
-    margin-top:18px; 
-    padding:14px; 
-    border-radius:12px; 
-    background: rgba(255,255,255,0.02); 
-    min-height:80px 
+
+  .doc-overview {
+    margin-top:20px; 
+    font-size:1.1rem; 
+    color:rgba(255,255,255,0.8); 
+    max-width:700px; 
+    margin-left:auto; 
+    margin-right:auto;
+    line-height: 1.6;
   }
-  @keyframes spin{ to{ transform:rotate(360deg) } }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+    animation: fadeIn 0.6s ease;
+  }
+  .stat-card {
+    background: rgba(127, 90, 240, 0.1);
+    border: 1px solid rgba(127, 90, 240, 0.2);
+    padding: 18px;
+    border-radius: 14px;
+    text-align: center;
+    transition: 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-3px); border-color: rgba(127, 90, 240, 0.5); }
+  
+  .stat-val { font-size: 1.3rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .stat-lbl { font-size: 0.8rem; color: #a5b4fc; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Main Sections */
+  .section-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 26px;
+    margin-bottom: 24px;
+    animation: fadeIn 0.7s ease;
+  }
+  .section-head { 
+    font-size: 1.4rem; 
+    font-weight: 700; 
+    color: #5eead4; 
+    margin-bottom: 12px; 
+    border-bottom: 1px solid rgba(255,255,255,0.1); 
+    padding-bottom: 12px; 
+  }
+  .section-text { color: rgba(255,255,255,0.9); margin-bottom: 16px; line-height: 1.6; }
+  
+  .section-bullets { padding-left: 20px; color: rgba(255,255,255,0.8); }
+  .section-bullets li { margin-bottom: 8px; line-height: 1.5; }
+  
+  /* Key Takeaways */
+  .takeaways-box {
+    background: linear-gradient(135deg, rgba(45, 212, 191, 0.1), rgba(45, 212, 191, 0.02));
+    border: 1px solid rgba(45, 212, 191, 0.3);
+    padding: 24px;
+    border-radius: 16px;
+    margin-top: 40px;
+    animation: fadeIn 0.8s ease;
+  }
+  .takeaways-head { 
+    font-size: 1.2rem; 
+    font-weight: 700; 
+    color: #5eead4; 
+    margin-bottom: 16px; 
+    display:flex; 
+    align-items:center; 
+    gap:10px; 
+  }
+
+  @keyframes fadeIn { from{opacity:0; transform:translateY(15px);} to{opacity:1; transform:translateY(0);} }
+  
+  .hidden { display:none; }
+  .loader { width:20px; height:20px; border-radius:50%; border:3px solid rgba(255,255,255,0.2); border-top-color:#fff; animation:spin 1s linear infinite; display:inline-block; vertical-align: middle; margin-left: 10px;}
+  @keyframes spin { to{transform:rotate(360deg);} }
+
 </style>
 </head>
-
 <body>
 
-<!-- Sidebar -->
 <aside class="sidebar" id="sidebar">
   <div class="brand">AI Study</div>
   <a href="../index.html">Home</a>
@@ -76,105 +176,154 @@
   <a href="delete-account.html">Delete Account</a>
 </aside>
 
-<!-- Main Content -->
 <main class="content-with-sidebar">
   <div class="page-wrapper container">
-    
     <h1 class="h-gradient">Summarize PDF</h1>
-    <p class="center mt-8">Upload a PDF and get a concise AI-generated summary and key points.</p>
+    <p class="center mt-8">Upload a Resume, Research Paper, or Book Chapter for a structured summary.</p>
 
-    <div class="card mt-18">
-      <input id="pdfFile" type="file" accept="application/pdf" class="input-file" />
-      
-      <div style="display:flex;gap:12px;align-items:center;margin-top:14px">
-        <button id="summarize-btn" class="btn-primary">Generate Summary</button>
-        <span id="summarize-loader" class="loader hidden"></span>
-        <div style="flex:1"></div>
-        <small style="opacity:0.7">Max file size: as per backend</small>
-      </div>
+    <div class="upload-card mt-18">
+      <label for="pdf-input" class="file-label" id="file-label-text">Click to Select PDF</label>
+      <input type="file" id="pdf-input" accept="application/pdf">
+      <br>
+      <button id="upload-btn" class="btn-primary mt-8">Generate Summary</button>
+      <span id="loader" class="loader hidden"></span>
     </div>
 
-    <div id="summarize-result" class="result-card"></div>
+    <div id="summary-result" style="margin-top:40px;"></div>
 
   </div>
 </main>
 
-<!-- Load Global Config (Backend URL) -->
 <script src="../config.js"></script>
-
-<!-- Summarize Logic -->
 <script>
-(async () => {
+(() => {
+  const API = window.API_BASE || "";
+  const tokenKey = "ai_study_token";
+  const fileInput = document.getElementById("pdf-input");
+  const labelText = document.getElementById("file-label-text");
+  const btn = document.getElementById("upload-btn");
+  const loader = document.getElementById("loader");
+  const out = document.getElementById("summary-result");
 
-  const API = window.API_BASE;   // now ALWAYS defined correctly
-  const TOKEN_KEY = "ai_study_token";
+  const esc = t => String(t||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
 
-  const fileEl = document.getElementById("pdfFile");
-  const btn = document.getElementById("summarize-btn");
-  const loader = document.getElementById("summarize-loader");
-  const out = document.getElementById("summarize-result");
+  // Show filename on select
+  fileInput.addEventListener("change", (e) => {
+    if(e.target.files[0]) labelText.innerText = e.target.files[0].name;
+  });
 
-  function show(el){ el.classList.remove("hidden"); }
-  function hide(el){ el.classList.add("hidden"); }
-
-  function esc(t){
-    return String(t || "").replace(/[&<>"']/g, m => (
-      { "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#39;" }[m]
-    ));
-  }
-
-  btn.addEventListener("click", async () => {
-
-    out.innerHTML = "";
-
-    if(!fileEl.files?.length){
-      out.innerHTML = "<p style='color:#ff4d6d'>Please choose a PDF file.</p>";
-      return;
+  // ----------------------------------------------------
+  //  RENDER LOGIC: Maps JSON to Beautiful HTML
+  // ----------------------------------------------------
+  function renderSummary(data) {
+    
+    // Fallback: If backend sends plain string/error
+    if(typeof data === 'string') {
+      return `
+        <div class="section-card">
+          <div class="section-head">Summary</div>
+          <div class="section-text" style="white-space: pre-wrap;">${esc(data)}</div>
+        </div>
+      `;
     }
 
-    show(loader);
+    // 1. Header (Emoji, Title, Type, Overview)
+    let html = `
+      <div class="summary-header">
+        <span class="doc-emoji">${data.emoji || '📄'}</span>
+        <div class="doc-title">${esc(data.title || 'Document Summary')}</div>
+        <div class="doc-type">${esc(data.document_type || 'General')}</div>
+        <div class="doc-overview">
+          ${esc(data.overview || '')}
+        </div>
+      </div>
+    `;
+
+    // 2. Quick Stats Grid
+    if(data.quick_stats && data.quick_stats.length > 0) {
+      html += `<div class="stats-grid">`;
+      data.quick_stats.forEach(stat => {
+        html += `
+          <div class="stat-card">
+            <div class="stat-val">${esc(stat.value)}</div>
+            <div class="stat-lbl">${esc(stat.label)}</div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+    }
+
+    // 3. Main Sections Loop
+    if(data.sections && data.sections.length > 0) {
+      data.sections.forEach(sec => {
+        html += `
+          <div class="section-card">
+            <div class="section-head">${esc(sec.heading)}</div>
+            <div class="section-text">${esc(sec.content)}</div>
+            ${ sec.bullets && sec.bullets.length > 0 ? `
+              <ul class="section-bullets">
+                ${sec.bullets.map(b => `<li>${esc(b)}</li>`).join('')}
+              </ul>
+            ` : ''}
+          </div>
+        `;
+      });
+    }
+
+    // 4. Key Takeaways Box
+    if(data.key_takeaways && data.key_takeaways.length > 0) {
+      html += `
+        <div class="takeaways-box">
+          <div class="takeaways-head">✨ Key Takeaways</div>
+          <ul class="section-bullets" style="margin-bottom:0">
+            ${data.key_takeaways.map(t => `<li>${esc(t)}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
+
+    return html;
+  }
+
+  // ----------------------------------------------------
+  //  API CALL
+  // ----------------------------------------------------
+  btn.addEventListener("click", async () => {
+    const file = fileInput.files[0];
+    if(!file) { alert("Please select a file first."); return; }
+
+    out.innerHTML = "";
+    loader.classList.remove("hidden");
     btn.disabled = true;
 
     try {
-      const fd = new FormData();
-      fd.append("file", fileEl.files[0]);
+      const formData = new FormData();
+      formData.append("file", file);
 
       const headers = {};
-      const token = localStorage.getItem(TOKEN_KEY);
+      const token = localStorage.getItem(tokenKey);
       if(token) headers["Authorization"] = "Bearer " + token;
 
       const resp = await fetch(API + "/summarize", {
         method: "POST",
         headers,
-        body: fd
+        body: formData
       });
 
-      const contentType = (resp.headers.get("content-type") || "").toLowerCase();
-      let data;
+      const data = await resp.json();
+      
+      // Handle the nested structure often returned by wrappers
+      // Check if data has a 'summary' key which contains the JSON object
+      const content = data.summary || data; 
+      
+      out.innerHTML = renderSummary(content);
 
-      if(contentType.includes("json")){
-        data = await resp.json();
-      } else {
-        data = { summary: await resp.text() };
-      }
-
-      const summary = data.summary || "(No summary generated)";
-
-      out.innerHTML = `
-        <h3>Summary</h3>
-        <div style="margin-top:10px; line-height:1.6; white-space:pre-wrap;">
-          ${esc(summary)}
-        </div>
-      `;
-    }
-    catch(err){
-      out.innerHTML = "<p style='color:#ff4d6d'>Error: " + esc(err.message) + "</p>";
-    }
-    finally {
-      hide(loader);
+    } catch (err) {
+      out.innerHTML = `<p style="color:#ff4d6d; text-align:center;">Error: ${esc(err.message)}</p>`;
+    } finally {
+      loader.classList.add("hidden");
       btn.disabled = false;
     }
-    
   });
 
 })();
