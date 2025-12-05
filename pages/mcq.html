@@ -9,14 +9,14 @@
 <style>
   .page-wrapper { max-width:980px; margin:36px auto; }
 
-  .card{
+  .card {
     padding:18px;
     border-radius:14px;
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
     box-shadow:0 10px 30px rgba(2,6,23,0.55);
   }
 
-  textarea{
+  textarea {
     width:100%;
     padding:12px;
     border-radius:12px;
@@ -26,52 +26,65 @@
     resize:vertical;
   }
 
-  .btn-primary{
+  .btn-primary {
     padding:10px 16px;
     border-radius:12px;
     border:none;
     background:linear-gradient(90deg,#7f5af0,#5eead4);
     color:#021;
     font-weight:700;
-    cursor:pointer;
+    cursor:pointer
   }
 
-  .loader{
-    width:16px;height:16px;
+  .loader {
+    width:16px;
+    height:16px;
     border-radius:50%;
     border:3px solid rgba(255,255,255,0.08);
     border-top-color:#7f5af0;
     animation:spin 900ms linear infinite;
     display:inline-block;
   }
-  .hidden{ display:none }
 
-  .mcq-list { margin-top:20px; display:flex; flex-direction:column; gap:18px; }
+  .hidden { display:none; }
 
-  .mcq-item{
+  /* MCQ UI */
+  .mcq-card {
+    margin-top:18px;
     padding:18px;
-    border-radius:12px;
+    border-radius:14px;
     background:rgba(255,255,255,0.03);
-    box-shadow:0 4px 18px rgba(0,0,0,0.25);
+    box-shadow:0 6px 20px rgba(2,6,23,0.5);
   }
 
-  .mcq-item strong{
+  .mcq-question {
     font-size:18px;
-    color:#fff;
+    font-weight:700;
+    margin-bottom:12px;
   }
 
-  .mcq-option{
-    margin-top:6px;
-    padding:8px 12px;
-    background:rgba(255,255,255,0.04);
-    border-radius:8px;
+  .mcq-option {
+    padding:10px 14px;
+    background:rgba(255,255,255,0.06);
+    margin-bottom:8px;
+    border-radius:10px;
+    transition:0.25s;
   }
 
-  @keyframes spin{ to{ transform:rotate(360deg) } }
+  .mcq-option:hover {
+    background:rgba(255,255,255,0.12);
+  }
+
+  .correct {
+    border-left:4px solid #5eead4;
+  }
+
+  @keyframes spin { to { transform:rotate(360deg); } }
 </style>
 </head>
 
 <body>
+
 <aside class="sidebar" id="sidebar">
   <div class="brand">AI Study</div>
   <a href="../index.html">Home</a>
@@ -88,7 +101,6 @@
 
 <main class="content-with-sidebar">
   <div class="page-wrapper container">
-
     <h1 class="h-gradient">MCQ Generator</h1>
     <p class="center mt-8">Turn a topic or text into practice MCQs — choose number of questions.</p>
 
@@ -98,8 +110,7 @@
       <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
         <input id="mcq-count" type="number" min="1" max="30" value="5"
           style="width:96px;padding:8px;border-radius:10px;background:transparent;
-          border:1px solid rgba(255,255,255,0.06)">
-        
+                 border:1px solid rgba(255,255,255,0.06)">
         <button id="mcq-submit" class="btn-primary">Generate MCQs</button>
         <span id="mcq-loader" class="loader hidden"></span>
         <div style="flex:1"></div>
@@ -107,8 +118,7 @@
       </div>
     </div>
 
-    <div id="mcq-result" class="result-card"></div>
-
+    <div id="mcq-result"></div>
   </div>
 </main>
 
@@ -118,94 +128,73 @@
 (() => {
 
   const API = window.API_BASE || "";
-  const tokenKey = "ai_study_token";
-
-  const out = document.getElementById("mcq-result");
   const btn = document.getElementById("mcq-submit");
   const loader = document.getElementById("mcq-loader");
+  const out = document.getElementById("mcq-result");
   const textEl = document.getElementById("mcq-text");
   const countEl = document.getElementById("mcq-count");
+  const tokenKey = "ai_study_token";
 
-  function show(l){ l.classList.remove("hidden"); }
-  function hide(l){ l.classList.add("hidden"); }
+  function show(e){ e.classList.remove("hidden"); }
+  function hide(e){ e.classList.add("hidden"); }
 
   function esc(t){
-    return String(t||"").replace(/[&<>"']/g,m=>(
-      { "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]
-    ));
+    return String(t||"").replace(/[&<>"']/g, m =>
+      ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m])
+    );
   }
 
   btn.addEventListener("click", async ()=>{
 
     out.innerHTML = "";
-    const text = (textEl.value||"").trim();
-    const count = Number(countEl.value)||5;
+    const text = textEl.value.trim();
+    const count = Number(countEl.value);
 
     if(!text){
       out.innerHTML = "<p style='color:#ff4d6d'>Enter topic or text.</p>";
       return;
     }
 
-    show(loader); btn.disabled = true;
+    show(loader);
+    btn.disabled = true;
 
-    try{
-      const headers = { "Content-Type":"application/json" };
+    try {
+      const headers = { "Content-Type": "application/json" };
       const token = localStorage.getItem(tokenKey);
-      if(token) headers.Authorization = "Bearer " + token;
+      if(token) headers["Authorization"] = "Bearer " + token;
 
       const resp = await fetch(API + "/make-mcq", {
-        method:"POST",
+        method: "POST",
         headers,
         body: JSON.stringify({ text, count })
       });
 
-      let raw = "";
-      const ct = (resp.headers.get("content-type")||"").toLowerCase();
+      const data = await resp.json();
+      const list = data.mcqs;
 
-      if(ct.includes("json")){
-        raw = (await resp.json()).mcqs || "";
-      } else {
-        raw = await resp.text();
-      }
+      let html = "";
 
-      raw = String(raw);
+      list.forEach((q, i) => {
+        html += `
+          <div class="mcq-card">
+            <div class="mcq-question">MCQ ${i+1}: ${esc(q.question)}</div>
 
-      // ---------------------------
-      //     SMART MCQ PARSER
-      // ---------------------------
-
-      // Extract A), B), C), D)
-      const lines = raw.split("\n").map(x => x.trim());
-      const options = lines.filter(l => /^[A-D][\).]/i.test(l));
-
-      const mcqs = [];
-      for(let i=0; i<options.length; i+=4){
-        mcqs.push({
-          question: "MCQ " + (mcqs.length + 1),
-          options: options.slice(i, i+4)
-        });
-      }
-
-      // Render beautifully
-      let html = "<div class='mcq-list'>";
-      mcqs.forEach(q=>{
-        html += `<div class='mcq-item'>
-          <strong>${esc(q.question)}</strong>
+            ${q.options
+              .map((opt, idx) => `
+                <div class="mcq-option ${q.answer === opt ? "correct" : ""}">
+                  ${String.fromCharCode(65 + idx)}) ${esc(opt)}
+                </div>
+              `).join("")
+            }
+          </div>
         `;
-
-        q.options.forEach(opt=>{
-          html += `<div class='mcq-option'>${esc(opt)}</div>`;
-        });
-
-        html += "</div>";
       });
-      html += "</div>";
 
       out.innerHTML = html;
 
-    } catch(err){
-      out.innerHTML = "<p style='color:#ff4d6d'>Error: "+esc(err.message||err)+"</p>";
-    } finally{
+    } catch(err) {
+      out.innerHTML = "<p style='color:#ff4d6d'>Error: " + esc(err.message) + "</p>";
+    } finally {
       hide(loader);
       btn.disabled = false;
     }
