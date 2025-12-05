@@ -5,18 +5,138 @@
 <title>Make Notes — AI Study</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="../styles.css">
+
 <style>
-  .page-wrapper { max-width:920px; margin:36px auto; }
-  .card{ padding:18px; border-radius:14px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); box-shadow:0 10px 30px rgba(2,6,23,0.55); }
-  textarea { width:100%; min-height:200px; padding:14px; border-radius:12px; background:transparent; border:1px solid rgba(255,255,255,0.06); color:inherit; resize:vertical }
-  .btn-primary{ padding:10px 16px;border-radius:12px;border:none;background:linear-gradient(90deg,#7f5af0,#5eead4);color:#021; font-weight:700; cursor:pointer }
-  .loader{ width:16px;height:16px;border-radius:50%; border:3px solid rgba(255,255,255,0.1); border-top-color:#5eead4; animation:spin 900ms linear infinite; display:inline-block }
-  .hidden{ display:none }
-  .result-card{ margin-top:18px; padding:12px; border-radius:12px; background: rgba(255,255,255,0.02) }
-  @keyframes spin{ to{ transform:rotate(360deg) } }
+  .page-wrapper { max-width:960px; margin:36px auto; }
+  
+  /* Input Area */
+  .card { 
+    padding:24px; 
+    border-radius:16px; 
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); 
+    box-shadow:0 10px 30px rgba(2,6,23,0.55); 
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  
+  textarea { 
+    width:100%; 
+    padding:16px; 
+    border-radius:12px; 
+    background:rgba(0,0,0,0.2); 
+    border:1px solid rgba(255,255,255,0.1); 
+    color:inherit; 
+    resize:vertical; 
+    font-family: inherit;
+    line-height: 1.5;
+    transition: 0.2s;
+  }
+  textarea:focus { border-color: #7f5af0; outline: none; background:rgba(0,0,0,0.3); }
+
+  .btn-primary { 
+    padding:12px 24px; 
+    border-radius:12px; 
+    border:none; 
+    background:linear-gradient(90deg,#7f5af0,#5eead4); 
+    color:#021; 
+    font-weight:700; 
+    cursor:pointer;
+    transition: transform 0.1s;
+  }
+  .btn-primary:active { transform: scale(0.97); }
+
+  /* ----------------------- */
+  /* NOTEBOOK STYLES        */
+  /* ----------------------- */
+
+  .notebook-container {
+    margin-top: 40px;
+    animation: slideUp 0.5s ease-out;
+  }
+
+  /* Title & Summary */
+  .note-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed rgba(255,255,255,0.1);
+  }
+  .note-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #fff, #e0e7ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+  }
+  .note-summary {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.7);
+    font-style: italic;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* Section Cards */
+  .note-section {
+    background: rgba(255,255,255,0.02);
+    border-left: 4px solid #7f5af0; /* Purple accent */
+    border-radius: 0 12px 12px 0;
+    padding: 24px;
+    margin-bottom: 24px;
+    transition: 0.2s;
+  }
+  .note-section:hover { background: rgba(255,255,255,0.04); }
+
+  .section-heading {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #a5b4fc;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  /* Custom Bullet List */
+  .note-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .note-list li {
+    position: relative;
+    padding-left: 24px;
+    margin-bottom: 12px;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.6;
+    font-size: 1.05rem;
+  }
+  .note-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #5eead4; /* Teal bullet */
+    font-weight: bold;
+    font-size: 1.2rem;
+    line-height: 1.4rem;
+  }
+  
+  /* Bold text styling within notes */
+  .note-list li strong {
+    color: #5eead4;
+    font-weight: 700;
+  }
+
+  .hidden { display:none }
+  .loader { width:20px; height:20px; border-radius:50%; border:3px solid rgba(255,255,255,0.1); border-top-color:#5eead4; animation:spin 900ms linear infinite; display:inline-block; vertical-align:middle; margin-left:10px; }
+  @keyframes slideUp { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:translateY(0)} }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
 </style>
 </head>
 <body>
+
 <aside class="sidebar" id="sidebar">
   <div class="brand">AI Study</div>
   <a href="../index.html">Home</a>
@@ -34,66 +154,117 @@
 <main class="content-with-sidebar">
   <div class="page-wrapper container">
     <h1 class="h-gradient">Make Notes</h1>
-    <p class="center mt-8">Paste text or your summary and let AI convert it into neat, structured notes.</p>
+    <p class="center mt-8">Convert messy text into clean, structured study notes.</p>
 
     <div class="card mt-18">
-      <textarea id="notes-text" placeholder="Paste text or summary here..."></textarea>
-      <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
-        <button id="notes-submit" class="btn-primary">Create Notes</button>
-        <span id="notes-loader" class="loader hidden" aria-hidden="true"></span>
-        <div style="flex:1"></div>
-        <small style="opacity:0.7">Notes are saved to your account (if logged in).</small>
+      <textarea id="notes-text" rows="8" placeholder="Paste your text here (e.g., a chapter, article, or lecture transcript)..."></textarea>
+      
+      <div style="margin-top:16px; display:flex; align-items:center;">
+        <button id="notes-submit" class="btn-primary">Generate Notes</button>
+        <span id="loader" class="loader hidden"></span>
       </div>
     </div>
 
-    <div id="notes-result" class="result-card"></div>
+    <div id="notes-result"></div>
   </div>
 </main>
+
 <script src="../config.js"></script>
 <script>
 (() => {
   const API = window.API_BASE || "";
   const tokenKey = "ai_study_token";
-  const btn = document.getElementById("notes-submit");
-  const loader = document.getElementById("notes-loader");
-  const out = document.getElementById("notes-result");
+  
   const textEl = document.getElementById("notes-text");
+  const btn = document.getElementById("notes-submit");
+  const loader = document.getElementById("loader");
+  const out = document.getElementById("notes-result");
 
-  function show(l){ l.classList.remove("hidden"); }
-  function hide(l){ l.classList.add("hidden"); }
-  function esc(t){ return String(t||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m])); }
+  const esc = t => String(t||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
 
-  btn.addEventListener("click", async ()=>{
+  // Helper to parse bold markdown **text** to <strong>text</strong>
+  function parseMarkdown(text) {
+    let safe = esc(text);
+    return safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  }
+
+  function renderNotes(data) {
+    // 1. Header
+    let html = `
+      <div class="notebook-container">
+        <div class="note-header">
+          <div class="note-title">${esc(data.title || "Study Notes")}</div>
+          <div class="note-summary">${esc(data.summary || "")}</div>
+        </div>
+    `;
+
+    // 2. Sections
+    if(data.sections && Array.isArray(data.sections)) {
+      data.sections.forEach(sec => {
+        html += `
+          <div class="note-section">
+            <div class="section-heading">${esc(sec.heading)}</div>
+            <ul class="note-list">
+              ${sec.points.map(pt => `<li>${parseMarkdown(pt)}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      });
+    } else if (data.notes && Array.isArray(data.notes)) {
+      // Fallback for old flat format or simple array return
+       html += `
+          <div class="note-section">
+            <ul class="note-list">
+              ${data.notes.map(pt => `<li>${parseMarkdown(pt)}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+    } else if (typeof data.notes === 'string') {
+        // Fallback for plain string
+        html += `<div class="note-section"><p style="white-space:pre-wrap">${esc(data.notes)}</p></div>`;
+    }
+
+    html += `</div>`; // Close container
+    return html;
+  }
+
+  btn.addEventListener("click", async () => {
+    const text = textEl.value.trim();
+    if(!text) { alert("Please enter some text first."); return; }
+
     out.innerHTML = "";
-    const text = (textEl.value || "").trim();
-    if(!text){ out.innerHTML = "<p style='color:#ff4d6d'>Enter text to create notes.</p>"; return; }
-    show(loader); btn.disabled = true;
+    loader.classList.remove("hidden");
+    btn.disabled = true;
 
     try {
       const headers = { "Content-Type": "application/json" };
       const token = localStorage.getItem(tokenKey);
       if(token) headers["Authorization"] = "Bearer " + token;
 
-      const resp = await fetch((API||"") + "/make-notes", { method:"POST", headers, body: JSON.stringify({ text }) });
-      const ct = (resp.headers.get("content-type") || "").toLowerCase();
+      const resp = await fetch(API + "/make-notes", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ text })
+      });
 
-      let data;
-      if(ct.includes("json")) {
-        data = await resp.json().catch(()=> ({ notes: resp.text() }));
-      } else {
-        data = { notes: await resp.text() };
-      }
+      const data = await resp.json();
+      
+      // Determine where the content lives based on backend structure
+      // Use data.notes_data if backend wraps it, or just data if it returns direct JSON
+      const content = data.notes_data || data; 
 
-      const notes = data.notes || data.note || JSON.stringify(data, null, 2);
-      out.innerHTML = "<h3>Generated Notes</h3><pre style='white-space:pre-wrap;line-height:1.6'>"+esc(notes)+"</pre>";
+      out.innerHTML = renderNotes(content);
 
-    } catch (err) {
-      out.innerHTML = "<p style='color:#ff4d6d'>Error: "+esc(err.message||err)+"</p>";
+    } catch(err) {
+      out.innerHTML = `<p style="color:#ff4d6d; text-align:center; margin-top:20px;">Error: ${esc(err.message)}</p>`;
     } finally {
-      hide(loader); btn.disabled = false;
+      loader.classList.add("hidden");
+      btn.disabled = false;
     }
   });
+
 })();
 </script>
+
 </body>
 </html>
