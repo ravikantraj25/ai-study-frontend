@@ -142,8 +142,14 @@
   // --------------------------
   // PARSE BACKEND STRING → STRUCTURED MCQS
   // --------------------------
+  // --------------------------
+  // PARSE BACKEND STRING → STRUCTURED MCQS
+  // --------------------------
   function parseMCQString(str) {
 
+      // FIX 1: Remove Markdown bolding (**) to clean up the text
+      str = str.replace(/\*\*/g, ""); 
+      
       str = str.replace("Here are 5 MCQs based on the given text:", "").trim();
 
       // split MCQs
@@ -154,21 +160,32 @@
       blocks.forEach(block => {
           const lines = block.trim().split("\n").map(l => l.trim()).filter(l => l);
 
+          // FIX 2: Ensure we don't pick up stray symbols as the question
           let question = lines[0];
           let options = [];
           let answer = "";
 
           lines.forEach(line => {
-              if (/^[A-D]\)/.test(line)) {
-                  options.push(line.substring(3).trim());
+              // FIX 3: Robust check for options (A) or A.)
+              if (/^[A-D][\)\.]/.test(line)) {
+                  // Remove "A) " or "A. " from the start
+                  options.push(line.replace(/^[A-D][\)\.]\s*/, "").trim());
               }
-              if (line.toLowerCase().startsWith("correct answer")) {
-                  answer = line.split(":")[1].trim();
-                  answer = answer.replace(/^[A-D]\)/, "").trim();
+              
+              // FIX 4: Use 'includes' instead of 'startsWith' to be safer
+              if (line.toLowerCase().includes("correct answer")) {
+                  let parts = line.split(":");
+                  if(parts[1]) {
+                      answer = parts[1].trim();
+                      // Remove option prefix (e.g., "B) ") from answer to match option text
+                      answer = answer.replace(/^[A-D][\)\.]\s*/, "").trim();
+                  }
               }
           });
 
-          mcqs.push({ question, options, answer });
+          if (question) {
+              mcqs.push({ question, options, answer });
+          }
       });
 
       return mcqs;
