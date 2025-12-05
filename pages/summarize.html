@@ -53,7 +53,6 @@
 </main>
 
 <script>
-/* Self-contained summarize script - premium UI */
 (async ()=>{
   const API = window.API_BASE || "";
   const tokenKey = "ai_study_token";
@@ -68,42 +67,58 @@
   function esc(t){ return String(t||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m])); }
 
   btn.addEventListener("click", async ()=>{
-    out.innerHTML = ""; 
-    if(!fileEl.files || fileEl.files.length===0){ out.innerHTML = "<p style='color:#ff4d6d'>Choose a PDF file.</p>"; return; }
-    const f = fileEl.files[0];
-    show(loader); btn.disabled = true;
+    out.innerHTML = "";
+
+    if(!fileEl.files?.length){
+      out.innerHTML = "<p style='color:#ff4d6d'>Please choose a PDF file.</p>";
+      return;
+    }
+
+    show(loader);
+    btn.disabled = true;
 
     try {
       const fd = new FormData();
-      fd.append("file", f);
+      fd.append("file", fileEl.files[0]);
 
       const headers = {};
-      const token = localStorage.getItem(tokenKey);
-      if(token) headers["Authorization"] = "Bearer " + token;
+      const t = localStorage.getItem(tokenKey);
+      if(t) headers["Authorization"] = "Bearer " + t;
 
-      const resp = await fetch((API||"") + "/summarize", { method:"POST", headers, body: fd });
+      const resp = await fetch(API + "/summarize", {
+        method:"POST",
+        headers,
+        body: fd
+      });
+
       const ct = (resp.headers.get("content-type") || "").toLowerCase();
-
       let data;
+
       if(ct.includes("json")){
-        try { data = await resp.json(); } catch { data = { summary: await resp.text() }; }
+        data = await resp.json();
       } else {
         data = { summary: await resp.text() };
       }
 
-      let text = "";
-      if (Array.isArray(data)) text = data.map(x=> x.summary || JSON.stringify(x)).join("\n\n");
-      else text = data.summary || data.text || JSON.stringify(data, null, 2);
+      const text = data.summary || "(No summary generated)";
 
-      out.innerHTML = "<h3 style='margin-top:6px'>Summary</h3><div style='margin-top:8px;line-height:1.6'>"+esc(text).replace(/\n/g,"<br>")+"</div>";
-
-    } catch (err) {
-      out.innerHTML = "<p style='color:#ff4d6d'>Error: "+esc(err.message || err)+"</p>";
-    } finally {
-      hide(loader); btn.disabled = false;
+      out.innerHTML = `
+        <h3>Summary</h3>
+        <div style="margin-top:10px; line-height:1.6; white-space:pre-wrap;">
+          ${esc(text)}
+        </div>
+      `;
+    }
+    catch(err){
+      out.innerHTML = "<p style='color:#ff4d6d'>Error: "+esc(err.message)+"</p>";
+    }
+    finally{
+      hide(loader);
+      btn.disabled = false;
     }
   });
 })();
 </script>
+
 </body>
 </html>
