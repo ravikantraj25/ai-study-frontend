@@ -5,19 +5,43 @@
 <title>Make MCQ — AI Study</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="../styles.css">
+
 <style>
   .page-wrapper { max-width:980px; margin:36px auto; }
-  .card{ padding:18px; border-radius:14px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); box-shadow:0 10px 30px rgba(2,6,23,0.55); }
-  textarea{ width:100%; padding:12px; border-radius:12px; background:transparent; border:1px solid rgba(255,255,255,0.06); color:inherit; resize:vertical }
-  .btn-primary{ padding:10px 16px;border-radius:12px;border:none;background:linear-gradient(90deg,#7f5af0,#5eead4);color:#021; font-weight:700; cursor:pointer }
-  .loader{ width:16px;height:16px;border-radius:50%; border:3px solid rgba(255,255,255,0.08); border-top-color:#7f5af0; animation:spin 900ms linear infinite; display:inline-block }
+  .card{ padding:18px; border-radius:14px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    box-shadow:0 10px 30px rgba(2,6,23,0.55); 
+  }
+  textarea{
+    width:100%; padding:12px; border-radius:12px; resize:vertical;
+    background:transparent; border:1px solid rgba(255,255,255,0.06); color:inherit;
+  }
+  .btn-primary{
+    padding:10px 16px;border-radius:12px;border:none;
+    background:linear-gradient(90deg,#7f5af0,#5eead4);
+    color:#021;font-weight:700;cursor:pointer;
+  }
+  .loader{
+    width:16px;height:16px;border-radius:50%;
+    border:3px solid rgba(255,255,255,0.08); 
+    border-top-color:#7f5af0; animation:spin 900ms linear infinite;
+    display:inline-block;
+  }
   .hidden{ display:none }
   .mcq-list{ margin-top:12px; }
-  .mcq-item{ padding:12px; border-radius:10px; background:rgba(0,0,0,0.03); margin-bottom:10px }
+  .mcq-item{
+    padding:16px; border-radius:12px; margin-bottom:14px;
+    background:rgba(255,255,255,0.03); 
+    box-shadow:0 4px 12px rgba(0,0,0,0.25);
+    line-height:1.6;
+  }
+  .mcq-item strong{ font-size:17px; }
   @keyframes spin{ to{ transform:rotate(360deg) } }
 </style>
 </head>
+
 <body>
+
 <aside class="sidebar" id="sidebar">
   <div class="brand">AI Study</div>
   <a href="../index.html">Home</a>
@@ -34,6 +58,7 @@
 
 <main class="content-with-sidebar">
   <div class="page-wrapper container">
+    
     <h1 class="h-gradient">MCQ Generator</h1>
     <p class="center mt-8">Turn a topic or text into practice MCQs — choose number of questions.</p>
 
@@ -41,9 +66,12 @@
       <textarea id="mcq-text" rows="6" placeholder="Enter topic or paste text..."></textarea>
 
       <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
-        <input id="mcq-count" type="number" min="1" max="30" value="5" style="width:96px;padding:8px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.06)">
+        <input id="mcq-count" type="number" min="1" max="30" value="5"
+          style="width:96px;padding:8px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.06)">
+        
         <button id="mcq-submit" class="btn-primary">Generate MCQs</button>
         <span id="mcq-loader" class="loader hidden" aria-hidden="true"></span>
+
         <div style="flex:1"></div>
         <small style="opacity:0.7">Tip: short focused text gives better MCQs.</small>
       </div>
@@ -52,7 +80,9 @@
     <div id="mcq-result" class="result-card"></div>
   </div>
 </main>
+
 <script src="../config.js"></script>
+
 <script>
 (() => {
   const API = window.API_BASE || "";
@@ -65,82 +95,93 @@
 
   function show(l){ l.classList.remove("hidden"); }
   function hide(l){ l.classList.add("hidden"); }
-  function esc(t){ return String(t||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m])); }
+  function esc(t){
+    return String(t||"").replace(/[&<>"']/g, m=>({
+      "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+    }[m]));
+  }
 
   btn.addEventListener("click", async ()=>{
+
     out.innerHTML = "";
     const text = (textEl.value||"").trim();
     const count = Number(countEl.value) || 5;
-    if(!text){ out.innerHTML = "<p style='color:#ff4d6d'>Enter topic or text.</p>"; return; }
-    show(loader); btn.disabled = true;
+
+    if(!text){
+      out.innerHTML = "<p style='color:#ff4d6d'>Enter topic or text.</p>";
+      return;
+    }
+
+    show(loader);
+    btn.disabled = true;
 
     try {
       const headers = { "Content-Type": "application/json" };
       const token = localStorage.getItem(tokenKey);
       if(token) headers["Authorization"] = "Bearer " + token;
 
-      const resp = await fetch((API||"") + "/make-mcq", { method:"POST", headers, body: JSON.stringify({ text, count }) });
+      const resp = await fetch(API + "/make-mcq", {
+        method:"POST",
+        headers,
+        body: JSON.stringify({ text, count })
+      });
+
       const ct = (resp.headers.get("content-type") || "").toLowerCase();
       let data;
-      if(ct.includes("json")) data = await resp.json().catch(()=> null);
-      else {
+
+      if(ct.includes("json")){
+        data = await resp.json().catch(()=> null);
+      } else {
         const txt = await resp.text();
         try { data = JSON.parse(txt); } catch { data = txt; }
       }
 
-      // Accept both shapes: array OR { mcqs: [...] }
-      const list = Array.isArray(data) ? data : (data && Array.isArray(data.mcqs) ? data.mcqs : null);
+      // Case: backend returned MCQs in markdown text
+      const raw = data.mcqs || data;
 
-     if(!list){
-    const raw = data.mcqs || data;
+      // Split markdown "MCQ 1", "MCQ 2", etc.
+      const blocks = String(raw)
+        .split(/\*\*MCQ\s*\d+\*\*/i)
+        .filter(x => x.trim());
 
-    // Convert markdown text into separate MCQs
-    const blocks = String(raw).split(/\*\*MCQ\s*\d+\*\*/i).filter(x => x.trim());
+      let html = "<div class='mcq-list'>";
 
-    let html = "<div class='mcq-list'>";
-    blocks.forEach((block, idx) => {
-        const q = block.trim();
+      blocks.forEach((block, idx) => {
+        const lines = block.trim().split("\n").map(s=>s.trim()).filter(s=>s);
 
-        // Extract question (first line)
-        const lines = q.split("\n").map(l => l.trim()).filter(l => l);
         const question = lines[0] || ("Question " + (idx+1));
-
-        // Extract options (lines starting with A), B), C), D))
         const options = lines.filter(l => /^[A-D][\).]/i.test(l));
-
-        // Extract answer
         const ansLine = lines.find(l => /^answer/i.test(l));
-        const answer = ansLine ? ansLine.replace(/answer[:\s]*/i, "") : null;
+        const answer = ansLine ? ansLine.replace(/answer[:\s]*/i,"") : null;
 
-        html += `<div class="mcq-item">
-          <strong>${esc(question)}</strong>
-          <div style="margin-top:8px">`;
+        html += `<div class="mcq-item">`;
+        html += `<strong>${esc(question)}</strong>`;
 
-        options.forEach(o => {
-            html += `<div>${esc(o)}</div>`;
-        });
-
-        html += `</div>`;
+        if(options.length){
+          html += `<div style="margin-top:8px;">`;
+          options.forEach(o => html += `<div>${esc(o)}</div>`);
+          html += `</div>`;
+        }
 
         if(answer){
-            html += `<div style="margin-top:10px"><b>Answer:</b> ${esc(answer)}</div>`;
+          html += `<div style="margin-top:10px;"><b>Answer:</b> ${esc(answer)}</div>`;
         }
 
         html += `</div>`;
-    });
+      });
 
-    html += "</div>";
-    out.innerHTML = html;
-}
-
+      html += "</div>";
+      out.innerHTML = html;
 
     } catch (err) {
       out.innerHTML = "<p style='color:#ff4d6d'>Error: "+esc(err.message||err)+"</p>";
-    } finally {
-      hide(loader); btn.disabled = false;
     }
+
+    hide(loader);
+    btn.disabled = false;
   });
 })();
 </script>
+
 </body>
 </html>
