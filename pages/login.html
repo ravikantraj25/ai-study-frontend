@@ -1,63 +1,86 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Login — AI Study</title>
-<link rel="stylesheet" href="../styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login — AI Study</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .auth-container { max-width: 400px; margin: 80px auto; padding: 0 20px; }
+        .auth-card { background: var(--card-bg); border: 1px solid var(--card-border); padding: 40px; border-radius: 20px; backdrop-filter: blur(12px); }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; }
+        input { width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid var(--input-border); color: #fff; border-radius: 10px; }
+        input:focus { border-color: #6366f1; outline: none; }
+        .auth-footer { margin-top: 20px; text-align: center; font-size: 0.9rem; color: var(--text-muted); }
+        .auth-footer a { color: #6366f1; text-decoration: none; }
+    </style>
 </head>
-
 <body>
 
-<!-- Sidebar -->
-<aside class="sidebar">
-  <div class="brand">AI Study</div>
+<div class="auth-container">
+    <div class="auth-card">
+        <h2 style="text-align:center; margin-bottom:30px; font-size:2rem;">Welcome Back</h2>
+        
+        <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="email" placeholder="name@example.com">
+        </div>
+        
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
 
-  <a href="../index.html">Home</a>
-  <a href="summarize.html">Summarize PDF</a>
-  <a href="make-notes.html">Make Notes</a>
-  <a href="mcq.html">Make MCQ</a>
-  <a href="explain.html">Explain</a>
-  <a href="qna.html">QnA</a>
-  <a href="notes.html">Notes History</a>
+        <button id="login-btn" class="btn-primary" style="width:100%">Sign In</button>
+        <div id="error-msg" style="color:#f87171; text-align:center; margin-top:15px; font-size:0.9rem;"></div>
 
-  <div style="flex:1"></div>
-
-  <a href="register.html">Register</a>
-  <a href="login.html" class="active">Login</a>
-</aside>
-
-
-<!-- Page Content -->
-<main class="content-with-sidebar">
-  <div class="page-wrapper">
-    <h1 class="h-gradient">Login</h1>
-    <p class="center mt-18">Access your saved notes and AI tools.</p>
-
-    <div class="card mt-18">
-
-      <label>Email</label>
-      <input id="login-email" type="email" placeholder="you@example.com" />
-
-      <label style="margin-top:12px">Password</label>
-      <input id="login-password" type="password" placeholder="Enter password" />
-
-      <div style="margin-top:16px;display:flex;gap:12px;align-items:center">
-        <button id="login-submit" class="btn-primary">Login</button>
-        <button onclick="location.href='register.html'"
-                class="btn-primary"
-                style="background:transparent;border:1px solid rgba(255,255,255,0.1)">
-          Create Account
-        </button>
-
-        <div id="login-loader" class="loader hidden" style="margin-left:12px"></div>
-      </div>
-
-      <div id="login-result" style="margin-top:12px;color:#ff8080"></div>
+        <div class="auth-footer">
+            Don't have an account? <a href="register.html">Create one</a>
+        </div>
     </div>
-  </div>
-</main>
+</div>
 
-<script src="../app.js"></script>
+<script src="../config.js"></script>
+<script>
+    const btn = document.getElementById("login-btn");
+    const errDiv = document.getElementById("error-msg");
+
+    btn.addEventListener("click", async () => {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        if(!email || !password) { errDiv.innerText = "Please fill in all fields"; return; }
+
+        btn.disabled = true;
+        btn.innerText = "Signing in...";
+        errDiv.innerText = "";
+
+        try {
+            const res = await fetch(`${window.API_BASE}/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.detail || "Login failed");
+
+            // Save Token & User Info
+            localStorage.setItem("ai_study_token", data.access_token);
+            // Optional: Store basic user info if needed immediately
+            localStorage.setItem("user_name", data.user.name);
+
+            window.location.href = "profile.html"; 
+
+        } catch (error) {
+            errDiv.innerText = error.message;
+            btn.disabled = false;
+            btn.innerText = "Sign In";
+        }
+    });
+</script>
 </body>
 </html>

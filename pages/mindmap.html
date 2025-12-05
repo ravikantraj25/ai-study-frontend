@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Mind Map — AI Study</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+
+<style>
+  .page-wrapper { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+  
+  .diagram-container {
+    margin-top: 30px;
+    background: #fff; 
+    padding: 30px;
+    border-radius: 16px;
+    min-height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: auto;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  }
+
+  [data-theme="dark"] .diagram-container {
+    background: rgba(255, 255, 255, 0.95);
+  }
+</style>
+</head>
+
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">AI Study</div>
+  <a href="../index.html">Home</a>
+  <a href="summarize.html">Summarize PDF</a>
+  <a href="make-notes.html">Make Notes</a>
+  <a href="flashcards.html">Flashcards</a>
+  <a href="mindmap.html" class="active">AI Mind Map</a>
+  <a href="mcq.html">Make MCQ</a>
+  <a href="explain.html">Explain</a>
+  <a href="qna.html">QnA</a>
+  <a href="notes.html">History</a>
+  <div class="spacer"></div>
+  <a href="profile.html">Profile</a>
+</aside>
+
+<main class="content-with-sidebar">
+  <div class="page-wrapper">
+    <h1 class="h-gradient">AI Mind Maps</h1>
+    <p class="center mt-8">Visualize complex topics with intelligent flowcharts.</p>
+
+    <div class="card mt-18">
+      <textarea id="mm-text" rows="4" placeholder="Enter a topic or paste text to visualize (e.g., 'Process of Digestion')..."></textarea>
+      
+      <div style="display:flex; gap:12px; margin-top:16px;">
+        <button id="mm-btn" class="btn-primary">Generate Diagram</button>
+        <span id="loader" class="loader hidden"></span>
+      </div>
+    </div>
+
+    <div id="diagram-wrapper" class="hidden">
+       <div class="diagram-container">
+          <div class="mermaid" id="mermaid-output"></div>
+       </div>
+       <div style="text-align:center; margin-top:10px; opacity:0.7; font-size:0.9rem;">
+          💡 Tip: Right-click the image to save it.
+       </div>
+    </div>
+    
+    <div id="error-msg" style="color:#ff4d6d; text-align:center; margin-top:20px;"></div>
+
+  </div>
+</main>
+
+<script src="../config.js"></script>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  
+  mermaid.initialize({ startOnLoad: false, theme: 'default' });
+
+  const btn = document.getElementById("mm-btn");
+  const textEl = document.getElementById("mm-text");
+  const loader = document.getElementById("loader");
+  const wrapper = document.getElementById("diagram-wrapper");
+  const output = document.getElementById("mermaid-output");
+  const errDiv = document.getElementById("error-msg");
+  const tokenKey = "ai_study_token";
+
+  btn.addEventListener("click", async () => {
+    const text = textEl.value.trim();
+    if(!text) { alert("Please enter some text."); return; }
+
+    // Reset UI
+    wrapper.classList.add("hidden");
+    errDiv.innerText = "";
+    loader.classList.remove("hidden");
+    btn.disabled = true;
+
+    try {
+      const headers = { "Content-Type": "application/json" };
+      const token = localStorage.getItem(tokenKey);
+      if(token) headers["Authorization"] = "Bearer " + token;
+
+      const resp = await fetch(`${window.API_BASE}/make-mindmap`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ text })
+      });
+
+      const data = await resp.json();
+      
+      if(data.error) throw new Error(data.error);
+
+      // Render Logic
+      const code = data.mermaid_code;
+      output.removeAttribute("data-processed"); // Reset mermaid state
+      output.innerHTML = code; // Insert raw text
+      
+      wrapper.classList.remove("hidden");
+      
+      await mermaid.run({
+        nodes: [output]
+      });
+
+    } catch (e) {
+      errDiv.innerText = "Error: " + e.message;
+    } finally {
+      loader.classList.add("hidden");
+      btn.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>

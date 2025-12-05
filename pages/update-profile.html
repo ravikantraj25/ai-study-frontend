@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Update Profile — AI Study</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .page-wrapper { max-width: 600px; margin: 40px auto; padding: 0 20px; }
+        .form-card { background: var(--card-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--card-border); }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: var(--text-muted); }
+        input { width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid var(--input-border); color: #fff; border-radius: 8px; }
+        .btn-row { display: flex; gap: 10px; margin-top: 30px; }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="brand">AI Study</div>
+    <a href="profile.html">Back to Profile</a>
+</aside>
+
+<main class="content-with-sidebar">
+    <div class="page-wrapper">
+        <h1 class="h-gradient" style="margin-bottom:20px;">Update Details</h1>
+        
+        <div class="form-card">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="up-name">
+            </div>
+
+            <div class="form-group">
+                <label>Mobile Number</label>
+                <input type="text" id="up-mobile">
+            </div>
+
+            <div class="btn-row">
+                <button class="btn-primary" id="save-btn">Save Changes</button>
+                <button class="btn-secondary" onclick="location.href='profile.html'">Cancel</button>
+            </div>
+            <p id="msg" style="margin-top:15px; text-align:center; font-size:0.9rem;"></p>
+        </div>
+    </div>
+</main>
+
+<script src="../config.js"></script>
+<script>
+    const token = localStorage.getItem("ai_study_token");
+    if(!token) window.location.href = "login.html";
+
+    const nameInput = document.getElementById("up-name");
+    const mobileInput = document.getElementById("up-mobile");
+    const msg = document.getElementById("msg");
+
+    // 1. Pre-fill data
+    async function init() {
+        const res = await fetch(`${window.API_BASE}/auth/me`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json();
+        nameInput.value = data.user.name;
+        mobileInput.value = data.user.mobile || "";
+    }
+
+    // 2. Update data
+    document.getElementById("save-btn").addEventListener("click", async () => {
+        const btn = document.getElementById("save-btn");
+        btn.disabled = true;
+        btn.innerText = "Saving...";
+        msg.innerText = "";
+
+        try {
+            const res = await fetch(`${window.API_BASE}/auth/me`, {
+                method: "PUT",
+                headers: { 
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name: nameInput.value,
+                    mobile: mobileInput.value
+                })
+            });
+
+            if(!res.ok) throw new Error("Update failed");
+
+            msg.style.color = "#5eead4";
+            msg.innerText = "Profile updated successfully! Redirecting...";
+            
+            setTimeout(() => window.location.href = "profile.html", 1500);
+
+        } catch (e) {
+            msg.style.color = "#f87171";
+            msg.innerText = "Error updating profile.";
+            btn.disabled = false;
+            btn.innerText = "Save Changes";
+        }
+    });
+
+    init();
+</script>
+</body>
+</html>

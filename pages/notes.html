@@ -9,59 +9,72 @@
 <style>
   .page-wrapper { max-width:960px; margin:36px auto; }
   
-  .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+  .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
   
   /* History Card */
   .h-card {
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
-    padding: 20px;
-    transition: 0.2s;
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.2s ease;
     display: flex;
     flex-direction: column;
+    position: relative;
+    overflow: hidden;
   }
-  .h-card:hover { transform: translateY(-3px); background: rgba(255,255,255,0.06); }
+  .h-card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.06); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
   
-  .h-type { font-size: 0.75rem; text-transform: uppercase; color: #a5b4fc; margin-bottom: 8px; font-weight: 700; letter-spacing: 1px; }
-  .h-title { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 10px; line-height: 1.4; }
-  .h-date { font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-top: auto; padding-top: 15px; }
+  .h-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px; }
+  .h-icon { font-size: 1.5rem; background: rgba(255,255,255,0.1); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
+  .h-type { font-size: 0.7rem; text-transform: uppercase; color: #a5b4fc; font-weight: 700; letter-spacing: 1px; padding-top: 5px; }
+  
+  .h-title { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 8px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .h-preview { font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-bottom: 20px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; flex-grow: 1; }
+  
+  .h-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
+  .h-date { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
   
   .btn-view {
-    margin-top: 15px;
-    width: 100%;
-    padding: 10px;
+    padding: 8px 16px;
     border-radius: 8px;
-    border: none;
-    background: rgba(127, 90, 240, 0.2);
+    border: 1px solid rgba(127, 90, 240, 0.3);
+    background: rgba(127, 90, 240, 0.1);
     color: #a5b4fc;
     font-weight: 600;
+    font-size: 0.85rem;
     cursor: pointer;
     transition: 0.2s;
   }
-  .btn-view:hover { background: #7f5af0; color: #fff; }
+  .btn-view:hover { background: #7f5af0; color: #fff; border-color: #7f5af0; }
 
   /* Modal Styles */
   .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
-    z-index: 100; display: none; justify-content: center; align-items: center;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+    z-index: 100; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease;
   }
-  .modal-overlay.active { display: flex; }
+  .modal-overlay.active { display: flex; opacity: 1; }
   
   .modal-content {
     background: #16161a;
-    width: 90%; max-width: 800px; max-height: 90vh;
-    border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);
-    overflow-y: auto; padding: 30px; position: relative;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    width: 90%; max-width: 800px; max-height: 85vh;
+    border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
+    overflow-y: auto; padding: 40px; position: relative;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+    transform: scale(0.95); transition: transform 0.3s ease;
   }
-  .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #fff; }
+  .modal-overlay.active .modal-content { transform: scale(1); }
 
-  /* Re-using styles from other pages for the modal content */
-  .section-head { color: #5eead4; font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; margin-top: 20px; }
-  .section-text { color: #ddd; line-height: 1.6; }
-  .chip { display:inline-block; padding:4px 10px; background:rgba(255,255,255,0.1); border-radius:12px; font-size:0.8rem; margin-right:5px; margin-bottom:5px; }
+  .close-btn { position: absolute; top: 20px; right: 25px; font-size: 28px; cursor: pointer; color: rgba(255,255,255,0.5); transition: 0.2s; }
+  .close-btn:hover { color: #fff; }
+
+  /* Modal Internal Styles */
+  .modal-title { font-size: 2rem; font-weight: 800; background: linear-gradient(90deg, #fff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+  .section-head { color: #5eead4; font-size: 1.3rem; font-weight: 700; margin-bottom: 10px; margin-top: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+  .section-text { color: #e2e8f0; line-height: 1.7; font-size: 1.05rem; }
+  ul { padding-left: 20px; color: rgba(255,255,255,0.8); line-height: 1.6; }
+  li { margin-bottom: 8px; }
 
 </style>
 </head>
@@ -110,6 +123,7 @@
 
   // Format Helper
   const esc = t => String(t||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
+  const parseBold = t => esc(t).replace(/\*\*(.*?)\*\*/g, '<strong style="color:#5eead4">$1</strong>');
 
   // --- 1. FETCH HISTORY ---
   async function loadHistory() {
@@ -127,7 +141,7 @@
       renderList(data.history || []);
 
     } catch(err) {
-      listEl.innerHTML = `<p style="color:#ff4d6d">Error loading history.</p>`;
+      listEl.innerHTML = `<p style="color:#ff4d6d; text-align:center; grid-column:1/-1;">Error loading history: ${err.message}</p>`;
     } finally {
       loader.style.display = "none";
     }
@@ -135,37 +149,82 @@
 
   // --- 2. RENDER CARD LIST ---
   function renderList(items) {
-    if(items.length === 0) {
-      listEl.innerHTML = "<p class='center' style='grid-column:1/-1'>No history found.</p>";
+    if(!items || items.length === 0) {
+      listEl.innerHTML = "<p class='center' style='grid-column:1/-1; color:rgba(255,255,255,0.5)'>No history found. Start using tools to generate content!</p>";
       return;
     }
 
     listEl.innerHTML = items.map((item, index) => {
-      // Determine Display Title
-      let title = "Generated Content";
-      let typeLabel = item.type || "Unknown";
+      // Determine Visuals based on Item Type
+      let icon = "📄";
+      let label = "Document";
+      
+      // Determine Title & Preview safely (No Slicing Errors!)
+      let displayTitle = "Untitled";
+      let displayPreview = "Click to view content...";
+      
+      const res = item.result || {};
+      const inp = item.input || {};
 
-      if(item.input) {
-        if(item.input.filename) title = item.input.filename;
-        else if(item.input.topic) title = item.input.topic;
-        else if(item.input.question) title = item.input.question;
-        else if(item.input.text) title = item.input.text.substring(0, 50) + "...";
+      // LOGIC: Try to get a smart title from the Result JSON, fallback to Input Filename/Text
+      
+      // A. SUMMARIES
+      if (item.type === 'pdf_summarize' || item.type === 'summarize') {
+         icon = "📑"; label = "Summary";
+         const sum = res.summary || res; // Handle wrapper
+         displayTitle = sum.title || inp.filename || "PDF Summary";
+         displayPreview = sum.overview || "Generated summary of document.";
+      }
+      // B. NOTES
+      else if (item.type === 'make_notes') {
+         icon = "📝"; label = "Notes";
+         const note = res.notes_data || res;
+         displayTitle = note.title || "Study Notes";
+         displayPreview = note.summary || "Structured bullet points from text.";
+      }
+      // C. QnA
+      else if (item.type === 'qna') {
+         icon = "💬"; label = "Q & A";
+         displayTitle = inp.question || "Question";
+         const ans = res.answer_data || res;
+         displayPreview = ans.answer || "AI Answer response.";
+      }
+      // D. MCQ
+      else if (item.type === 'make_mcq') {
+         icon = "✅"; label = "Quiz";
+         displayTitle = "MCQ Practice Set";
+         displayPreview = "Multiple choice questions generated from text.";
+      }
+      // E. EXPLAIN
+      else if (item.type === 'explain') {
+         icon = "🧠"; label = "Explanation";
+         displayTitle = inp.topic || "Topic Explanation";
+         const exp = res.explanation || res;
+         // Try to grab first paragraph if array
+         if(Array.isArray(exp) && exp[0]) displayPreview = exp[0].paragraph || "Deep dive explanation.";
       }
 
-      // We attach the JSON data to the button using a data attribute logic or ID lookup
-      // Simpler approach: store data in global array or just pass ID if needed. 
-      // For simplicity here, we attach index.
+      // Safe truncate for display
+      if(displayTitle.length > 60) displayTitle = displayTitle.substring(0, 60) + "...";
+      if(typeof displayPreview === 'string' && displayPreview.length > 100) displayPreview = displayPreview.substring(0, 100) + "...";
+
       return `
         <div class="h-card">
-          <div class="h-type">${esc(typeLabel)}</div>
-          <div class="h-title">${esc(title)}</div>
-          <div class="h-date">${new Date(item.created_at).toLocaleDateString()}</div>
-          <button class="btn-view" onclick="openItem(${index})">View Result</button>
+          <div class="h-header">
+             <div class="h-icon">${icon}</div>
+             <div class="h-type">${label}</div>
+          </div>
+          <div class="h-title">${esc(displayTitle)}</div>
+          <div class="h-preview">${esc(displayPreview)}</div>
+          
+          <div class="h-footer">
+             <div class="h-date">${new Date(item.created_at).toLocaleDateString()}</div>
+             <button class="btn-view" onclick="openItem(${index})">Open</button>
+          </div>
         </div>
       `;
     }).join('');
     
-    // Store items globally to access in modal
     window.historyItems = items;
   }
 
@@ -173,15 +232,15 @@
   window.openItem = (index) => {
     const item = window.historyItems[index];
     const data = item.result;
+    const inp = item.input || {};
     
     let html = "";
 
     // -- A. Summary Handler --
-    if(item.type === 'pdf_summarize' || data.sections) {
-       // Handle wrapper if present
+    if(item.type === 'pdf_summarize' || item.type === 'summarize') {
        const sum = data.summary || data; 
-       html += `<h2>${esc(sum.title || "Document Summary")}</h2>`;
-       html += `<p style="opacity:0.8; margin-bottom:20px">${esc(sum.overview || "")}</p>`;
+       html += `<div class="modal-title">${esc(sum.title || inp.filename || "Summary")}</div>`;
+       html += `<p style="opacity:0.8; margin-bottom:20px; font-size:1.1rem;">${esc(sum.overview || "")}</p>`;
        
        if(sum.sections) {
          sum.sections.forEach(sec => {
@@ -194,33 +253,68 @@
        }
     } 
     // -- B. Notes Handler --
-    else if (item.type === 'make_notes' || data.notes || data.notes_data) {
+    else if (item.type === 'make_notes') {
        const note = data.notes_data || data.notes || data;
-       html += `<h2>${esc(note.title || "Study Notes")}</h2>`;
-       html += `<p style="opacity:0.8">${esc(note.summary || "")}</p>`;
+       html += `<div class="modal-title">${esc(note.title || "Study Notes")}</div>`;
+       html += `<p style="opacity:0.8; font-style:italic; margin-bottom:20px;">${esc(note.summary || "")}</p>`;
        
        if(note.sections) {
          note.sections.forEach(sec => {
            html += `<div class="section-head">${esc(sec.heading)}</div>`;
-           html += `<ul>${sec.points.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>`;
+           html += `<ul>${sec.points.map(p=>`<li>${parseBold(p)}</li>`).join('')}</ul>`;
          });
        } else if (typeof note === 'string') {
-         html += `<pre style="white-space:pre-wrap">${esc(note)}</pre>`;
+         html += `<pre style="white-space:pre-wrap; color:#ddd;">${esc(note)}</pre>`;
        }
     }
     // -- C. QnA Handler --
-    else if (item.type === 'qna' || data.answer) {
+    else if (item.type === 'qna') {
        const qna = data.answer_data || data;
-       html += `<h2>QnA Result</h2>`;
+       html += `<div class="modal-title">QnA Session</div>`;
+       
+       html += `<div class="section-head">Question</div>`;
+       html += `<p class="section-text" style="font-weight:bold;">${esc(inp.question)}</p>`;
+
        html += `<div class="section-head">Answer</div>`;
-       html += `<p class="section-text">${esc(qna.answer)}</p>`;
+       html += `<p class="section-text">${parseBold(qna.answer)}</p>`;
+       
        if(qna.evidence) {
          html += `<div class="section-head">Evidence</div>`;
-         html += `<p style="font-style:italic">"${esc(qna.evidence)}"</p>`;
+         html += `<p style="font-style:italic; color:#a5b4fc;">"${esc(qna.evidence)}"</p>`;
        }
     }
-    // -- D. Fallback --
+    // -- D. MCQ Handler --
+    else if (item.type === 'make_mcq') {
+       const mcqs = data.mcqs_data || data; // Assuming backend sends structured list
+       // If backend sends text block
+       if (typeof mcqs === 'string') {
+          html += `<div class="modal-title">Generated MCQs</div>`;
+          html += `<pre style="white-space:pre-wrap; color:#ddd;">${esc(mcqs)}</pre>`;
+       } else {
+          // If backend sends array
+          html += `<div class="modal-title">Generated MCQs</div>`;
+          // (Add parsing logic here if you stored structured MCQs, otherwise fall back to raw dump)
+          html += `<pre>${JSON.stringify(mcqs, null, 2)}</pre>`;
+       }
+    }
+    // -- E. Explain Handler --
+    else if (item.type === 'explain') {
+       const exp = data.explanation || data;
+       html += `<div class="modal-title">${esc(inp.topic || "Explanation")}</div>`;
+       
+       if(Array.isArray(exp)) {
+         exp.forEach(sec => {
+            html += `<div class="section-head">${esc(sec.title)}</div>`;
+            html += `<p class="section-text">${esc(sec.paragraph)}</p>`;
+            if(sec.bullets) html += `<ul>${sec.bullets.map(b=>`<li>${esc(b)}</li>`).join('')}</ul>`;
+         });
+       } else {
+         html += `<pre>${esc(JSON.stringify(exp, null, 2))}</pre>`;
+       }
+    }
+    // -- Fallback --
     else {
+      html += `<div class="modal-title">Raw Data</div>`;
       html += `<pre>${esc(JSON.stringify(data, null, 2))}</pre>`;
     }
 
