@@ -147,39 +147,45 @@
   // --------------------------
   // STRING → STRUCTURED MCQs
   // --------------------------
-  function parseMCQString(str) {
-    let blocks = str.split("\n\n").filter(b => b.trim() !== "");
+  // --------------------------
+// PARSE BACKEND STRING
+// --------------------------
+function parseMCQString(str) {
+    // Remove header text if present
+    str = str.replace("Here are 5 MCQs based on the given text:", "").trim();
 
-    let mcqs = [];
+    // Split MCQs based on the "MCQ X" pattern
+    const groups = str.split(/MCQ\s+\d+/).filter(g => g.trim() !== "");
 
-    blocks.forEach(block => {
-      const lines = block.split("\n").map(l => l.trim());
+    const mcqs = [];
 
-      let question = "";
-      let options = [];
-      let answer = "";
+    groups.forEach(group => {
+        const lines = group.trim().split("\n").map(l => l.trim()).filter(l => l);
 
-      lines.forEach(line => {
-        if (/^\d+\./.test(line)) {
-          question = line.replace(/^\d+\.\s*/, "");
-        }
+        let question = lines[0]; // first line = question
+        let options = [];
+        let answer = "";
 
-        if (/^[A-D]\)/.test(line)) {
-          options.push(line.substring(3).trim());
-        }
+        // Parse options and answer
+        lines.forEach(line => {
+            if (/^[A-D]\)/.test(line)) {
+                // A) option text
+                options.push(line.substring(3).trim());
+            }
 
-        if (line.toLowerCase().startsWith("correct answer")) {
-          answer = line.split(":")[1].replace(")", "").trim();
-        }
-      });
+            if (line.toLowerCase().startsWith("correct answer")) {
+                answer = line.split(":")[1].trim();
+                // remove "B)" etc.
+                answer = answer.replace(/^[A-D]\)/, "").trim();
+            }
+        });
 
-      if (question && options.length === 4) {
         mcqs.push({ question, options, answer });
-      }
     });
 
     return mcqs;
-  }
+}
+
 
   // --------------------------
   // MAIN BUTTON EVENT
