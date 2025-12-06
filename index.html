@@ -1,440 +1,228 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Study Assistant – Intelligent Learning</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Study Assistant</title>
+    
+    <link rel="stylesheet" href="styles.css">
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script
+      async
+      crossorigin="anonymous"
+      data-clerk-publishable-key="pk_test_c3RlYWR5LXNocmV3LTgxLmNsZXJrLmFjY291bnRzLmRldiQ"
+      src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+      type="text/javascript"
+    ></script>
 
-<script
-  async
-  crossorigin="anonymous"
-  data-clerk-publishable-key="pk_test_c3RlYWR5LXNocmV3LTgxLmNsZXJrLmFjY291bnRzLmRldiQ"
-  src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
-  type="text/javascript"
-></script>
+    <style>
+        /* Homepage specific styles */
+        .hero {
+            text-align: center;
+            padding: 120px 20px 60px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            line-height: 1.1;
+            background: linear-gradient(90deg, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-<style>
-/* ---------- VARIABLES & THEMES ---------- */
-:root {
-    --bg-color: #050507;
-    --text-main: #ffffff;
-    --text-muted: #a1a1aa;
-    --primary-gradient: linear-gradient(135deg, #6366f1, #3b82f6);
-    --nav-bg: rgba(5, 5, 7, 0.75);
-    --card-bg: rgba(255, 255, 255, 0.03);
-    --card-border: rgba(255, 255, 255, 0.08);
-    --card-hover-bg: rgba(255, 255, 255, 0.06);
-    --shadow-color: rgba(0, 0, 0, 0.5);
-    --glow-opacity: 0.6;
-}
+        .hero p {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.7);
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
 
-[data-theme="light"] {
-    --bg-color: #f8fafc;
-    --text-main: #0f172a;
-    --text-muted: #64748b;
-    --nav-bg: rgba(255, 255, 255, 0.75);
-    --card-bg: rgba(255, 255, 255, 0.6);
-    --card-border: rgba(0, 0, 0, 0.06);
-    --card-hover-bg: rgba(255, 255, 255, 0.9);
-    --shadow-color: rgba(148, 163, 184, 0.15);
-    --glow-opacity: 0.35;
-}
+        /* Feature Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            padding: 40px 0;
+            display: none; /* Hidden until logged in */
+            animation: slideUp 0.5s ease-out;
+        }
 
-/* ---------- GLOBAL RESET ---------- */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+        .feature-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 30px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
 
-body {
-    font-family: "Inter", sans-serif;
-    background: var(--bg-color);
-    color: var(--text-main);
-    overflow-x: hidden;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    line-height: 1.6;
-}
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.06);
+            border-color: #7f5af0;
+            box-shadow: 0 10px 30px rgba(127, 90, 240, 0.15);
+        }
 
-/* ---------- NAVBAR ---------- */
-.navbar {
-    width: 100%;
-    padding: 18px 40px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 100;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    background: var(--nav-bg);
-    border-bottom: 1px solid var(--card-border);
-    transition: background 0.3s ease, border-color 0.3s ease;
-}
+        .f-icon { font-size: 2.5rem; margin-bottom: 16px; display: block; }
+        .f-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; color: #fff; }
+        .f-desc { font-size: 0.9rem; color: rgba(255,255,255,0.6); line-height: 1.5; }
 
-.navbar .logo {
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    background: var(--primary-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
+        /* Guest View */
+        .guest-cta {
+            display: none; /* Hidden if logged in */
+            margin-top: 20px;
+        }
 
-.navbar .nav-right {
-    display: flex;
-    align-items: center;
-    gap: 30px;
-}
-
-.nav-links {
-    display: flex;
-    gap: 25px;
-}
-
-.nav-links a {
-    color: var(--text-muted);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 14px;
-    transition: color 0.2s;
-}
-
-.nav-links a:hover {
-    color: var(--text-main);
-}
-
-/* Theme Toggle Button */
-.theme-toggle {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.2s, transform 0.2s;
-}
-.theme-toggle:hover {
-    color: var(--text-main);
-    transform: rotate(15deg);
-}
-.theme-toggle svg { width: 20px; height: 20px; }
-
-/* Auth Buttons */
-.btn-small {
-    padding: 8px 20px;
-    border-radius: 6px;
-    border: none;
-    background: var(--text-main);
-    color: var(--bg-color);
-    cursor: pointer;
-    transition: 0.25s;
-    font-size: 13px;
-    font-weight: 600;
-}
-.btn-small:hover { opacity: 0.9; transform: translateY(-1px); }
-
-/* ---------- BACKGROUND ANIMATION ---------- */
-.glow-container {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    z-index: -1;
-    overflow: hidden;
-    pointer-events: none;
-}
-.glow {
-    position: absolute;
-    width: 600px;
-    height: 600px;
-    filter: blur(120px);
-    border-radius: 50%;
-    opacity: var(--glow-opacity);
-    transition: opacity 0.5s ease;
-    animation: float 10s ease-in-out infinite;
-}
-.glow1 { top: -100px; left: -100px; background: #4f46e5; }
-.glow2 { bottom: -100px; right: -100px; background: #06b6d4; animation-delay: 2s; }
-.glow3 { top: 40%; left: 40%; width: 400px; height: 400px; background: #ec4899; animation-delay: 4s; }
-
-@keyframes float {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(30px, -30px); }
-}
-
-/* ---------- HERO SECTION ---------- */
-.hero {
-    padding: 180px 20px 100px;
-    text-align: center;
-    max-width: 900px;
-    margin: 0 auto;
-}
-
-.hero h1 {
-    font-size: 64px;
-    font-weight: 800;
-    letter-spacing: -1.5px;
-    line-height: 1.1;
-    margin-bottom: 24px;
-    background: linear-gradient(to right, var(--text-main), var(--text-muted));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.hero p {
-    font-size: 20px;
-    color: var(--text-muted);
-    max-width: 600px;
-    margin: 0 auto 40px;
-    font-weight: 300;
-}
-
-.btn-primary {
-    padding: 14px 36px;
-    border-radius: 50px;
-    border: none;
-    background: var(--primary-gradient);
-    color: #fff;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 20px 35px -5px rgba(99, 102, 241, 0.5);
-}
-
-/* ---------- FEATURES GRID ---------- */
-.features {
-    max-width: 1100px;
-    margin: 40px auto 120px;
-    padding: 0 24px;
-}
-
-.features h2 {
-    text-align: center;
-    font-size: 32px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    margin-bottom: 60px;
-    color: var(--text-main);
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 24px;
-    justify-content: center;
-}
-
-/* ---------- PROFESSIONAL CARD ---------- */
-.card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    padding: 32px 24px;
-    border-radius: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.card:hover {
-    background: var(--card-hover-bg);
-    border-color: rgba(99, 102, 241, 0.3);
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px -10px var(--shadow-color);
-}
-
-.card .icon {
-    font-size: 32px;
-    margin-bottom: 20px;
-    display: inline-block;
-    padding: 12px;
-    border-radius: 12px;
-    background: rgba(99, 102, 241, 0.1);
-}
-
-.card h3 {
-    font-size: 18px;
-    margin-bottom: 10px;
-    font-weight: 600;
-    color: var(--text-main);
-}
-
-.card p {
-    color: var(--text-muted);
-    font-size: 14px;
-    line-height: 1.6;
-}
-
-/* ---------- FOOTER ---------- */
-footer {
-    border-top: 1px solid var(--card-border);
-    text-align: center;
-    padding: 40px;
-    color: var(--text-muted);
-    font-size: 13px;
-    background: var(--bg-color);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .navbar { padding: 15px 20px; }
-    .hero h1 { font-size: 42px; }
-    .nav-links { display: none; }
-}
-</style>
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    </style>
 </head>
-
 <body>
 
-<header class="navbar">
-    <div class="logo">AI Study</div>
-    
-    <div class="nav-right">
-        <div class="nav-links">
-            <a href="index.html">Home</a>
-            <a href="pages/summarize.html">Tools</a>
-            
-            <a id="nav-login" href="pages/login.html">Login</a>
-            <a id="nav-register" href="pages/register.html">Register</a>
-            <a id="nav-profile" href="pages/profile.html" style="display:none;">Profile</a>
-        </div>
-
-        <button id="nav-logout" class="btn-small" style="display:none; margin-right: 15px;">Logout</button>
-
-        <button class="theme-toggle" id="theme-btn" aria-label="Toggle Dark Mode">
-            <svg id="moon-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-            <svg id="sun-icon" style="display:none" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-        </button>
-    </div>
-</header>
-
-<div class="glow-container">
     <div class="glow glow1"></div>
     <div class="glow glow2"></div>
-    <div class="glow glow3"></div>
-</div>
 
-<section class="hero">
-    <h1>Master your subjects<br>with AI precision.</h1>
-    <p>Summaries, visual mind maps, notes, and intelligent explanations generated in seconds. The ultimate toolkit for the modern student.</p>
-    <button class="btn-primary" onclick="location.href='pages/summarize.html'">Get Started Free</button>
-</section>
-
-<section class="features">
-    <h2>Intelligent Tools</h2>
-
-    <div class="grid">
-        <div class="card" onclick="location.href='pages/summarize.html'">
-            <div class="icon">📄</div>
-            <h3>PDF Summarizer</h3>
-            <p>Distill complex research papers and textbooks into concise, digestible key points.</p>
+    <nav class="navbar">
+        <div class="logo">AI Study</div>
+        <div class="nav-links">
+            <a href="pages/profile.html" id="nav-profile" class="hidden">Profile</a>
+            <a href="pages/login.html" id="nav-login">Login</a>
+            <a href="pages/register.html" id="nav-register"><button class="btn-small">Get Started</button></a>
+            <span id="nav-user-name" style="color:#a5b4fc; font-weight:600;"></span>
+            <a href="#" id="nav-logout" class="hidden" style="color:#ff5b6e;">Logout</a>
         </div>
+    </nav>
 
-        <div class="card" onclick="location.href='pages/make-notes.html'">
-            <div class="icon">📝</div>
-            <h3>Smart Notes</h3>
-            <p>Convert messy thoughts or transcripts into structured, exam-ready bullet points.</p>
-        </div>
-
-        <div class="card" onclick="location.href='pages/mindmap.html'" style="border-color: rgba(99, 102, 241, 0.5);">
-            <div class="icon">🧩</div>
-            <h3>AI Mind Map</h3>
-            <p>Visualize complex topics with intelligent, auto-generated flowcharts.</p>
-        </div>
-
-        <div class="card" onclick="location.href='pages/mcq.html'">
-            <div class="icon">⚡</div>
-            <h3>MCQ Generator</h3>
-            <p>Test your knowledge immediately with AI-crafted quizzes based on your material.</p>
-        </div>
-
-        <div class="card" onclick="location.href='pages/explain.html'">
-            <div class="icon">🧠</div>
-            <h3>Deep Explain</h3>
-            <p>Stuck on a concept? Get a tutor-style explanation with real-world analogies.</p>
-        </div>
-        <div class="card" onclick="location.href='pages/flashcards.html'" style="border-color: rgba(99, 102, 241, 0.4);">
-            <div class="icon">🃏</div>
-            <h3>Flashcards</h3>
-            <p>Memorize key concepts with active recall flip-cards generated instantly.</p>
-        </div>
-    </div>
-</section>
-
-<footer>
-    © 2025 AI Study Assistant. All rights reserved.
-</footer>
-
-<script>
-    // ---------- AUTH LOGIC (CLERK) ----------
-    window.addEventListener("load", async function () {
-        // 1. Load Clerk
-        await Clerk.load();
-
-        const loginBtn = document.getElementById("nav-login");
-        const registerBtn = document.getElementById("nav-register");
-        const profileBtn = document.getElementById("nav-profile");
-        const logoutBtn = document.getElementById("nav-logout");
-
-        // 2. Check if user is logged in
-        if (Clerk.user) {
-            // User IS logged in: Hide login/register, Show Profile/Logout
-            if(loginBtn) loginBtn.style.display = "none";
-            if(registerBtn) registerBtn.style.display = "none";
-            if(profileBtn) profileBtn.style.display = "block";
-            if(logoutBtn) logoutBtn.style.display = "block";
-        } else {
-            // User IS NOT logged in: Show login/register
-            if(loginBtn) loginBtn.style.display = "block";
-            if(registerBtn) registerBtn.style.display = "block";
-            if(profileBtn) profileBtn.style.display = "none";
-            if(logoutBtn) logoutBtn.style.display = "none";
-        }
-
-        // 3. Handle Logout Click
-        if(logoutBtn) {
-            logoutBtn.addEventListener("click", async () => {
-                await Clerk.signOut();
-                window.location.reload();
-            });
-        }
-    });
-
-    // ---------- DARK/LIGHT MODE LOGIC (UNCHANGED) ----------
-    const htmlEl = document.documentElement;
-    const themeBtn = document.getElementById("theme-btn");
-    const sunIcon = document.getElementById("sun-icon");
-    const moonIcon = document.getElementById("moon-icon");
-
-    const currentTheme = localStorage.getItem("theme") || 
-                         (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
-
-    setTheme(currentTheme);
-
-    themeBtn.addEventListener("click", () => {
-        const newTheme = htmlEl.getAttribute("data-theme") === "dark" ? "light" : "dark";
-        setTheme(newTheme);
-    });
-
-    function setTheme(theme) {
-        htmlEl.setAttribute("data-theme", theme);
-        localStorage.setItem("theme", theme);
+    <div class="container">
         
-        if (theme === "dark") {
-            sunIcon.style.display = "none";
-            moonIcon.style.display = "block";
-        } else {
-            sunIcon.style.display = "block";
-            moonIcon.style.display = "none";
-        }
-    }
-</script>
+        <section class="hero">
+            <h1>Master Any Topic<br>With AI</h1>
+            <p>Generate notes, quizzes, flashcards, and summaries instantly. Your personal AI tutor is ready.</p>
+            
+            <div class="guest-cta" id="guest-view">
+                <a href="pages/register.html"><button class="btn-primary" style="font-size:1.1rem; padding:16px 32px;">Start Learning for Free</button></a>
+                <p style="margin-top:16px; font-size:0.9rem;">Already have an account? <a href="pages/login.html" style="color:#5eead4;">Login here</a></p>
+            </div>
+        </section>
 
+        <div class="features-grid" id="dashboard-view">
+            
+            <a href="pages/explain.html" class="feature-card">
+                <span class="f-icon">🧠</span>
+                <div class="f-title">Explain Topic</div>
+                <div class="f-desc">Deep dive into complex topics with simple analogies and examples.</div>
+            </a>
+
+            <a href="pages/make-notes.html" class="feature-card">
+                <span class="f-icon">📝</span>
+                <div class="f-title">Make Notes</div>
+                <div class="f-desc">Paste messy text and get structured, exam-ready bullet points.</div>
+            </a>
+
+            <a href="pages/summarize.html" class="feature-card">
+                <span class="f-icon">📄</span>
+                <div class="f-title">Summarize PDF</div>
+                <div class="f-desc">Upload a PDF and get a structured summary with key takeaways.</div>
+            </a>
+
+            <a href="pages/mcq.html" class="feature-card">
+                <span class="f-icon">✅</span>
+                <div class="f-title">Quiz Mode</div>
+                <div class="f-desc">Test your knowledge with AI-generated multiple choice questions.</div>
+            </a>
+
+            <a href="pages/flashcards.html" class="feature-card">
+                <span class="f-icon">🗂️</span>
+                <div class="f-title">Flashcards</div>
+                <div class="f-desc">Generate study cards to memorize definitions and concepts.</div>
+            </a>
+
+            <a href="pages/qna.html" class="feature-card">
+                <span class="f-icon">💬</span>
+                <div class="f-title">Ask Questions</div>
+                <div class="f-desc">Chat with your documents and find specific answers instantly.</div>
+            </a>
+
+             <a href="pages/mindmap.html" class="feature-card">
+                <span class="f-icon">🗺️</span>
+                <div class="f-title">Mind Map</div>
+                <div class="f-desc">Visualize concepts with AI-generated flowcharts.</div>
+            </a>
+            
+             <a href="pages/notes.html" class="feature-card" style="border-color:rgba(255,255,255,0.2)">
+                <span class="f-icon">clock</span>
+                <div class="f-title">History</div>
+                <div class="f-desc">View your past notes, summaries, and quizzes.</div>
+            </a>
+
+        </div>
+
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        const publishableKey = "pk_test_c3RlYWR5LXNocmV3LTgxLmNsZXJrLmFjY291bnRzLmRldiQ"; 
+        
+        const guestView = document.getElementById("guest-view");
+        const dashboardView = document.getElementById("dashboard-view");
+        const navLogin = document.getElementById("nav-login");
+        const navRegister = document.getElementById("nav-register");
+        const navProfile = document.getElementById("nav-profile");
+        const navLogout = document.getElementById("nav-logout");
+        const navUser = document.getElementById("nav-user-name");
+
+        window.addEventListener("load", async function () {
+            // 1. Load Clerk
+            await Clerk.load({ publishableKey });
+
+            if (Clerk.user) {
+                // --- USER IS LOGGED IN ---
+                console.log("✅ User Logged In:", Clerk.user.firstName);
+
+                // UI Updates
+                guestView.style.display = "none";
+                dashboardView.style.display = "grid";
+                navLogin.classList.add("hidden");
+                navRegister.classList.add("hidden");
+                navProfile.classList.remove("hidden");
+                navLogout.classList.remove("hidden");
+                navUser.innerText = `Hi, ${Clerk.user.firstName || "Scholar"}`;
+
+                // --- CRITICAL: GET & SAVE TOKEN ---
+                // This gets the JWT token from Clerk and saves it to LocalStorage
+                // so your other pages (Explain, Notes, etc.) can send it to Python.
+                try {
+                    const token = await Clerk.session.getToken();
+                    if(token) {
+                        localStorage.setItem("ai_study_token", token);
+                        console.log("🔐 Token synced to LocalStorage");
+                    } else {
+                        console.warn("⚠️ Token retrieval failed or empty");
+                    }
+                } catch(e) {
+                    console.error("Error getting token:", e);
+                }
+
+                // Logout Logic
+                navLogout.addEventListener("click", async () => {
+                    await Clerk.signOut();
+                    localStorage.removeItem("ai_study_token"); // Clear token
+                    window.location.reload();
+                });
+
+            } else {
+                // --- GUEST MODE ---
+                console.log("👤 Guest Mode");
+                guestView.style.display = "block";
+                dashboardView.style.display = "none";
+                localStorage.removeItem("ai_study_token"); // Security cleanup
+            }
+        });
+    </script>
 </body>
 </html>

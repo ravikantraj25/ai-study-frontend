@@ -88,7 +88,6 @@
   <div class="brand">AI Study</div>
   <a href="../index.html">Home</a>
   <a href="flashcards.html">Flashcards</a>
-  <a href="mindmap.html" class="active">Mind Map</a>
   <a href="summarize.html">Summarize PDF</a>
   <a href="make-notes.html">Make Notes</a>
   <a href="mcq.html">Make MCQ</a>
@@ -137,22 +136,30 @@
       const headers = { "Content-Type": "application/json" };
       const token = localStorage.getItem(tokenKey);
       
-      // If no token, redirect to login is handled by the user flow usually, 
-      // but here we just show empty state or redirect if strict.
+      // FIX: If no token, show a button to login
       if(!token) { 
-         listEl.innerHTML = "<p class='center' style='color:#ff4d6d'>Please log in to view history.</p>";
+         listEl.innerHTML = `
+            <div style="grid-column:1/-1; text-align:center; margin-top:20px;">
+                <p style="color:#ff4d6d; margin-bottom:15px;">You need to log in to see your history.</p>
+                <a href="login.html"><button class="btn-view" style="background:#7f5af0; color:white; border:none; padding:10px 20px;">Go to Login</button></a>
+            </div>
+         `;
          loader.style.display = "none";
          return; 
       }
       
       headers["Authorization"] = "Bearer " + token;
 
-      // 👇 FIXED: Correct Endpoint (/api/history/get)
+      // Ensure API endpoint is correct
       const resp = await fetch(`${API}/api/history/get`, { headers });
       
       if(resp.status === 401) { 
-         // Token expired or invalid
-         listEl.innerHTML = "<p class='center' style='color:#ff4d6d'>Session expired. Please log in again.</p>";
+         listEl.innerHTML = `
+            <div style="grid-column:1/-1; text-align:center; margin-top:20px;">
+                <p style="color:#ff4d6d; margin-bottom:15px;">Session expired.</p>
+                <a href="login.html"><button class="btn-view" style="background:#7f5af0; color:white;">Log In Again</button></a>
+            </div>
+         `;
          return; 
       }
 
@@ -177,8 +184,6 @@
       // Determine Visuals based on Item Type
       let icon = "📄";
       let label = "Document";
-      
-      // Determine Title & Preview safely
       let displayTitle = "Untitled";
       let displayPreview = "Click to view content...";
       
@@ -186,55 +191,46 @@
       const inp = item.input || {};
 
       // LOGIC: Smart Title & Preview extraction
-      
-      // A. SUMMARIES
       if (item.type === 'pdf_summarize' || item.type === 'summarize') {
          icon = "📑"; label = "Summary";
          const sum = res.summary || res; 
          displayTitle = sum.title || inp.filename || "PDF Summary";
          displayPreview = sum.overview || "Generated summary of document.";
       }
-      // B. NOTES
       else if (item.type === 'make_notes') {
          icon = "📝"; label = "Notes";
          const note = res.notes_data || res;
          displayTitle = note.title || "Study Notes";
          displayPreview = note.summary || "Structured bullet points from text.";
       }
-      // C. QnA
       else if (item.type === 'qna') {
          icon = "💬"; label = "Q & A";
          displayTitle = inp.question || "Question";
          const ans = res.answer_data || res;
          displayPreview = ans.answer || "AI Answer response.";
       }
-      // D. MCQ
       else if (item.type === 'make_mcq') {
          icon = "✅"; label = "Quiz";
          displayTitle = "MCQ Practice Set";
-         displayPreview = `Generated ${Array.isArray(res) ? res.length : 5} practice questions.`;
+         displayPreview = `Generated practice questions.`;
       }
-      // E. EXPLAIN
       else if (item.type === 'explain') {
          icon = "🧠"; label = "Explanation";
          displayTitle = inp.topic || "Topic Explanation";
          const exp = res.explanation || res;
          if(Array.isArray(exp) && exp[0]) displayPreview = exp[0].paragraph || "Deep dive explanation.";
       }
-      // F. MINDMAP
       else if (item.type === 'mindmap') {
          icon = "🗺️"; label = "Mind Map";
          displayTitle = "Visual Diagram";
          displayPreview = "Mermaid.js flowchart generated from text.";
       }
-      // G. FLASHCARDS
       else if (item.type === 'flashcards') {
          icon = "🗂️"; label = "Flashcards";
          displayTitle = "Study Deck";
-         displayPreview = `Set of ${Array.isArray(res) ? res.length : 'multiple'} flashcards.`;
+         displayPreview = `Flashcard set generated from text.`;
       }
 
-      // Safe truncate
       if(displayTitle.length > 60) displayTitle = displayTitle.substring(0, 60) + "...";
       if(typeof displayPreview === 'string' && displayPreview.length > 100) displayPreview = displayPreview.substring(0, 100) + "...";
 
@@ -246,7 +242,6 @@
           </div>
           <div class="h-title">${esc(displayTitle)}</div>
           <div class="h-preview">${esc(displayPreview)}</div>
-          
           <div class="h-footer">
              <div class="h-date">${new Date(item.created_at).toLocaleDateString()}</div>
              <button class="btn-view" onclick="openItem(${index})">Open</button>
@@ -263,15 +258,12 @@
     const item = window.historyItems[index];
     const data = item.result;
     const inp = item.input || {};
-    
     let html = "";
 
-    // -- A. Summary Handler --
     if(item.type === 'pdf_summarize' || item.type === 'summarize') {
        const sum = data.summary || data; 
        html += `<div class="modal-title">${esc(sum.title || inp.filename || "Summary")}</div>`;
        html += `<p style="opacity:0.8; margin-bottom:20px; font-size:1.1rem;">${esc(sum.overview || "")}</p>`;
-       
        if(sum.sections) {
          sum.sections.forEach(sec => {
            html += `<div class="section-head">${esc(sec.heading)}</div>`;
@@ -282,12 +274,10 @@
          });
        }
     } 
-    // -- B. Notes Handler --
     else if (item.type === 'make_notes') {
        const note = data.notes_data || data.notes || data;
        html += `<div class="modal-title">${esc(note.title || "Study Notes")}</div>`;
        html += `<p style="opacity:0.8; font-style:italic; margin-bottom:20px;">${esc(note.summary || "")}</p>`;
-       
        if(note.sections) {
          note.sections.forEach(sec => {
            html += `<div class="section-head">${esc(sec.heading)}</div>`;
@@ -297,44 +287,35 @@
          html += `<pre style="white-space:pre-wrap; color:#ddd;">${esc(note)}</pre>`;
        }
     }
-    // -- C. QnA Handler --
     else if (item.type === 'qna') {
        const qna = data.answer_data || data;
        html += `<div class="modal-title">QnA Session</div>`;
-       
        html += `<div class="section-head">Question</div>`;
        html += `<p class="section-text" style="font-weight:bold;">${esc(inp.question)}</p>`;
-
        html += `<div class="section-head">Answer</div>`;
        html += `<p class="section-text">${parseBold(qna.answer)}</p>`;
-       
        if(qna.evidence) {
          html += `<div class="section-head">Evidence</div>`;
          html += `<p style="font-style:italic; color:#a5b4fc;">"${esc(qna.evidence)}"</p>`;
        }
     }
-    // -- D. MCQ Handler (IMPROVED) --
     else if (item.type === 'make_mcq') {
        const mcqs = data.mcqs_data || data; 
        html += `<div class="modal-title">Generated Quiz</div>`;
-       
        if (Array.isArray(mcqs)) {
           mcqs.forEach((q, i) => {
              html += `<div style="margin-bottom:20px; background:rgba(255,255,255,0.05); padding:20px; border-radius:12px;">`;
              html += `<div style="font-weight:bold; color:#fff; margin-bottom:12px; font-size:1.1rem;">${i+1}. ${esc(q.question)}</div>`;
-             
              html += `<ul style="list-style:none; padding-left:0;">`;
              q.options.forEach(opt => {
                 const isCorrect = opt === q.correctAnswer;
-                // Highlight correct answer green, others gray
                 const style = isCorrect ? 'color:#5eead4; font-weight:bold;' : 'color:rgba(255,255,255,0.7);';
                 const icon = isCorrect ? '✅ ' : '⚪ ';
                 html += `<li style="${style}; margin-bottom:6px;">${icon}${esc(opt)}</li>`;
              });
              html += `</ul>`;
-             
              if(q.explanation) {
-                html += `<div style="margin-top:12px; font-size:0.9rem; color:#a5b4fc; border-left:3px solid #7f5af0; padding-left:12px; padding-top:4px; padding-bottom:4px; background:rgba(127,90,240,0.1)">💡 ${esc(q.explanation)}</div>`;
+                html += `<div style="margin-top:12px; font-size:0.9rem; color:#a5b4fc; border-left:3px solid #7f5af0; padding-left:12px;">💡 ${esc(q.explanation)}</div>`;
              }
              html += `</div>`;
           });
@@ -342,11 +323,9 @@
           html += `<pre style="white-space:pre-wrap; color:#ddd;">${esc(mcqs)}</pre>`;
        }
     }
-    // -- E. Explain Handler --
     else if (item.type === 'explain') {
        const exp = data.explanation || data;
        html += `<div class="modal-title">${esc(inp.topic || "Explanation")}</div>`;
-       
        if(Array.isArray(exp)) {
          exp.forEach(sec => {
             html += `<div class="section-head">${esc(sec.title)}</div>`;
@@ -357,7 +336,6 @@
          html += `<pre>${esc(JSON.stringify(exp, null, 2))}</pre>`;
        }
     }
-    // -- F. MindMap & Flashcards (Fallbacks) --
     else {
       html += `<div class="modal-title">${item.type.toUpperCase()}</div>`;
       html += `<pre style="white-space:pre-wrap; color:#aaa;">${esc(JSON.stringify(data, null, 2))}</pre>`;
