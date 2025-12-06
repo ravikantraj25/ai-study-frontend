@@ -7,154 +7,175 @@
 <link rel="stylesheet" href="../styles.css">
 
 <style>
-  .page-wrapper { max-width:980px; margin:36px auto; }
+  .page-wrapper { max-width:980px; margin:36px auto; padding: 0 20px; }
 
+  /* Input Card */
   .card {
-    padding:18px;
-    border-radius:14px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    padding:24px;
+    border-radius:16px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
     box-shadow:0 10px 30px rgba(2,6,23,0.55);
+    border: 1px solid rgba(255,255,255,0.05);
   }
 
   textarea {
     width:100%;
-    padding:12px;
+    padding:16px;
     border-radius:12px;
-    background:transparent;
-    border:1px solid rgba(255,255,255,0.06);
+    background:rgba(0,0,0,0.2);
+    border:1px solid rgba(255,255,255,0.1);
     color:inherit;
     resize:vertical;
     font-family: inherit;
+    line-height: 1.5;
+    transition: 0.2s;
+  }
+  textarea:focus { 
+    border-color: #7f5af0; 
+    outline: none; 
+    background:rgba(0,0,0,0.3); 
+  }
+
+  /* Controls Row */
+  .controls-row {
+    display:flex; 
+    gap:16px; 
+    align-items:center; 
+    margin-top:20px; 
+    flex-wrap:wrap;
+  }
+
+  .input-group {
+    display:flex; 
+    align-items:center; 
+    background:rgba(255,255,255,0.05); 
+    padding:8px 16px; 
+    border-radius:12px;
+    border: 1px solid rgba(255,255,255,0.05);
   }
 
   .btn-primary {
-    padding:10px 16px;
+    padding:12px 24px;
     border-radius:12px;
     border:none;
     background:linear-gradient(90deg,#7f5af0,#5eead4);
     color:#021;
     font-weight:700;
     cursor:pointer;
-    transition: opacity 0.2s;
+    transition: transform 0.1s;
   }
-  
-  .btn-primary:hover { opacity: 0.9; }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary:active { transform: scale(0.96); }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
   .loader {
-    width:16px;
-    height:16px;
+    width:20px;
+    height:20px;
     border-radius:50%;
-    border:3px solid rgba(255,255,255,0.08);
-    border-top-color:#7f5af0;
+    border:3px solid rgba(255,255,255,0.1);
+    border-top-color:#5eead4;
     animation:spin 900ms linear infinite;
-    display:inline-block;
   }
-
   .hidden { display:none; }
 
-  /* --- PROFESSIONAL MCQ UI --- */
+  /* --- MCQ QUIZ UI --- */
   .mcq-card {
     margin-top:24px;
-    padding:20px;
+    padding:24px;
     border-radius:16px;
-    background:rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.02);
     border: 1px solid rgba(255,255,255,0.05);
-    box-shadow:0 4px 20px rgba(0,0,0,0.2);
-    transition: transform 0.2s;
+    animation: slideUp 0.4s ease-out;
   }
 
   .mcq-question {
-    font-size:18px;
+    font-size: 1.15rem;
     font-weight:600;
-    margin-bottom:16px;
+    margin-bottom:20px;
     line-height: 1.5;
-    color: #f1f5f9;
+    color: #fff;
   }
 
-  /* Interactive Options */
+  /* Options */
   .mcq-option {
-    padding:14px 16px;
-    background:rgba(255,255,255,0.04);
-    margin-bottom:10px;
-    border-radius:10px;
+    padding:16px;
+    background:rgba(255,255,255,0.03);
+    margin-bottom:12px;
+    border-radius:12px;
     border: 2px solid transparent;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
+    font-size: 1rem;
   }
 
   .mcq-option:hover {
-    background:rgba(255,255,255,0.08);
+    background:rgba(255,255,255,0.06);
     transform: translateX(4px);
   }
 
-  /* --- GAME STATES (Correct/Wrong) --- */
+  /* --- STATES --- */
   
-  /* User Clicked Correct */
+  /* User Selected CORRECT */
   .mcq-option.selected-correct {
     background: rgba(45, 212, 191, 0.15); 
-    border-color: #5eead4;
+    border-color: #2dd4bf; /* Teal-400 */
     color: #5eead4;
   }
 
-  /* User Clicked Wrong */
+  /* User Selected WRONG */
   .mcq-option.selected-wrong {
-    background: rgba(239, 68, 68, 0.15); 
-    border-color: #ef4444;
-    color: #ef4444;
+    background: rgba(248, 113, 113, 0.15); 
+    border-color: #f87171; /* Red-400 */
+    color: #fca5a5;
   }
 
   /* Reveal Correct Answer (when user gets it wrong) */
   .mcq-option.reveal-correct {
-    border-color: #5eead4;
-    box-shadow: 0 0 10px rgba(94, 234, 212, 0.1);
+    border-color: #2dd4bf;
+    box-shadow: 0 0 15px rgba(45, 212, 191, 0.2);
   }
 
-  /* Disable card after answering */
-  .mcq-card.answered {
-    opacity: 0.95;
-  }
+  /* Locked State (After answering) */
+  .mcq-card.answered { opacity: 0.95; }
   .mcq-card.answered .mcq-option {
     cursor: default;
-    pointer-events: none; /* Disable further clicks */
+    pointer-events: none; 
   }
-  .mcq-card.answered .mcq-option:hover {
-    transform: none;
-  }
+  .mcq-card.answered .mcq-option:hover { transform: none; }
 
-  /* Explanation Box - Hidden until answered */
+  /* Explanation Box */
   .explanation-box {
     margin-top: 16px;
-    padding: 14px;
-    border-radius: 8px;
-    background: rgba(127, 90, 240, 0.1);
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(127, 90, 240, 0.15);
     font-size: 0.95rem;
-    color: #c4b5fd;
-    border-left: 3px solid #7f5af0;
-    display: none; /* Hidden by default */
-    animation: fadeIn 0.4s ease;
+    color: #e0e7ff;
+    border-left: 4px solid #7f5af0;
+    display: none; 
+    line-height: 1.5;
   }
-  
-  .explanation-box.visible {
-    display: block;
-  }
+  .explanation-box.visible { display: block; animation: fadeIn 0.3s ease; }
 
-  /* Scoreboard Badge */
+  /* Score Badge */
   .scoreboard {
     background: #7f5af0;
     color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-weight: bold;
-    font-size: 0.9rem;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.95rem;
     margin-left: auto;
-    box-shadow: 0 4px 12px rgba(127, 90, 240, 0.4);
+    box-shadow: 0 4px 15px rgba(127, 90, 240, 0.4);
+    display: flex;
+    gap: 8px;
+    align-items: center;
   }
 
   @keyframes spin { to { transform:rotate(360deg); } }
-  @keyframes fadeIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes slideUp { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
 </style>
 </head>
 
@@ -178,29 +199,30 @@
 <main class="content-with-sidebar">
   <div class="page-wrapper container">
     <h1 class="h-gradient">MCQ Quiz Mode</h1>
-    <p class="center mt-8">Generate a quiz, test your knowledge, and track your score.</p>
+    <p class="center mt-8">Generate a quiz, test your knowledge instantly, and track your score.</p>
 
     <div class="card mt-18">
-      <textarea id="mcq-text" rows="5" placeholder="Paste study material, article, or topic here to generate a quiz..."></textarea>
+      <textarea id="mcq-text" rows="6" placeholder="Paste your study material here (e.g., lecture notes, article, or chapter text)..."></textarea>
 
-      <div style="display:flex; gap:12px; align-items:center; margin-top:16px; flex-wrap:wrap;">
+      <div class="controls-row">
         
-        <div style="display:flex; align-items:center; background:rgba(255,255,255,0.05); padding:4px 12px; border-radius:10px;">
-            <label for="mcq-count" style="font-size:0.9rem; margin-right:8px; color:rgba(255,255,255,0.7);">Questions:</label>
+        <div class="input-group">
+            <label for="mcq-count" style="font-size:0.9rem; margin-right:10px; color:rgba(255,255,255,0.7);">Questions:</label>
             <input id="mcq-count" type="number" min="1" max="20" value="5"
-              style="width:50px; border:none; background:transparent; color:white; font-weight:bold; text-align:center; outline:none;">
+              style="width:40px; border:none; background:transparent; color:white; font-weight:bold; text-align:center; outline:none;">
         </div>
 
-        <button id="mcq-submit" class="btn-primary">Start Quiz</button>
+        <button id="mcq-submit" class="btn-primary">Generate Quiz</button>
         <span id="mcq-loader" class="loader hidden"></span>
         
         <div id="score-display" class="scoreboard hidden">
-            Score: <span id="current-score">0</span> / <span id="total-qs">0</span>
+           <span>🏆 Score:</span>
+           <span id="current-score">0</span> / <span id="total-qs">0</span>
         </div>
       </div>
     </div>
 
-    <div id="mcq-result"></div>
+    <div id="mcq-result" style="padding-bottom: 60px;"></div>
   </div>
 </main>
 
@@ -209,7 +231,7 @@
 <script>
 (() => {
 
-  const API = window.API_BASE || "http://localhost:8000"; 
+  const API = window.API_BASE || ""; 
   const btn = document.getElementById("mcq-submit");
   const loader = document.getElementById("mcq-loader");
   const out = document.getElementById("mcq-result");
@@ -230,11 +252,12 @@
   // --------------------------
   // GAME LOGIC: Handle Answer Click
   // --------------------------
+  // We attach this to window so the HTML onclick attributes can find it
   window.checkAnswer = (element, isCorrect, cardId) => {
       const card = document.getElementById(cardId);
-      if (card.classList.contains("answered")) return; // Prevent multiple clicks
+      if (card.classList.contains("answered")) return; // Already answered
 
-      // Mark card as answered (locks it)
+      // Lock card
       card.classList.add("answered");
 
       // Show Explanation
@@ -242,23 +265,36 @@
       if (explBox) explBox.classList.add("visible");
 
       if (isCorrect) {
-          // Correct Answer Logic
+          // ✅ Correct
           element.classList.add("selected-correct");
           score++;
           currentScoreEl.innerText = score;
-          // Optional: Add a checkmark icon inside the div
-          element.innerHTML += ' <span style="margin-left:auto;">✅</span>';
+          
+          // Add Checkmark
+          const icon = document.createElement("span");
+          icon.style.marginLeft = "auto";
+          icon.innerHTML = "✅";
+          element.appendChild(icon);
       } else {
-          // Wrong Answer Logic
+          // ❌ Wrong
           element.classList.add("selected-wrong");
-          element.innerHTML += ' <span style="margin-left:auto;">❌</span>';
+          const icon = document.createElement("span");
+          icon.style.marginLeft = "auto";
+          icon.innerHTML = "❌";
+          element.appendChild(icon);
 
-          // Highlight the REAL correct answer
+          // Reveal the REAL correct answer
           const options = card.querySelectorAll(".mcq-option");
           options.forEach(opt => {
               if (opt.dataset.isCorrect === "true") {
                   opt.classList.add("reveal-correct");
-                  opt.innerHTML += ' <span style="margin-left:auto; font-size:0.8em; opacity:0.8;">(Correct)</span>';
+                  // Add text tag
+                  const tag = document.createElement("span");
+                  tag.style.marginLeft = "auto";
+                  tag.style.fontSize = "0.8em";
+                  tag.style.opacity = "0.8";
+                  tag.innerText = "(Correct Answer)";
+                  opt.appendChild(tag);
               }
           });
       }
@@ -269,9 +305,10 @@
   // --------------------------
   btn.addEventListener("click", async () => {
 
+    // Reset UI
     out.innerHTML = "";
     scoreDisplay.classList.add("hidden");
-    score = 0; // Reset Score
+    score = 0;
     currentScoreEl.innerText = "0";
 
     const text = textEl.value.trim();
@@ -280,7 +317,7 @@
     if (count > 20) count = 20;
 
     if (!text) {
-      out.innerHTML = "<p style='color:#ff4d6d; margin-top:20px;'>Please enter text first.</p>";
+      out.innerHTML = "<p style='color:#ff4d6d; margin-top:20px; text-align:center'>Please paste some text to generate questions.</p>";
       return;
     }
 
@@ -292,7 +329,8 @@
       const token = localStorage.getItem(tokenKey);
       if (token) headers["Authorization"] = "Bearer " + token;
 
-      const resp = await fetch(API + "/make-mcq", {
+      // 👇 FIXED: Added /api/study prefix
+      const resp = await fetch(`${API}/api/study/make-mcq`, {
         method: "POST",
         headers,
         body: JSON.stringify({ text, num_questions: count })
@@ -303,15 +341,15 @@
 
       const list = data.mcqs; 
       if (!list || list.length === 0) {
-          out.innerHTML = "<p style='margin-top:20px;'>No MCQs generated.</p>";
+          out.innerHTML = "<p style='margin-top:20px; text-align:center'>No MCQs generated. Try different text.</p>";
           return;
       }
 
-      // Update Scoreboard Totals
+      // Show Scoreboard
       totalQsEl.innerText = list.length;
       scoreDisplay.classList.remove("hidden");
 
-      // Render HTML
+      // Render Cards
       let html = "";
       list.forEach((q, i) => {
         const cardId = `mcq-card-${i}`;
@@ -350,7 +388,7 @@
 
     } catch(err) {
       console.error(err);
-      out.innerHTML = "<p style='color:#ff4d6d; margin-top:20px;'>Error: " + esc(err.message) + "</p>";
+      out.innerHTML = `<p style='color:#ff4d6d; margin-top:20px; text-align:center'>Error: ${esc(err.message)}</p>`;
     } finally {
       loader.classList.add("hidden");
       btn.disabled = false;

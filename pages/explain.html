@@ -287,7 +287,9 @@
       const token = localStorage.getItem(tokenKey);
       if(token) headers["Authorization"] = "Bearer " + token;
 
-      const resp = await fetch((API||"") + "/explain", { 
+      // 👇👇👇 FIX IS HERE 👇👇👇
+      // Was: "/explain" -> Now: "/api/study/explain"
+      const resp = await fetch((API||"") + "/api/study/explain", { 
         method:"POST", 
         headers, 
         body: JSON.stringify({ topic }) 

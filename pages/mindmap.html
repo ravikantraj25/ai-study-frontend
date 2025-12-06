@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,11 +9,39 @@
 <link rel="stylesheet" href="../styles.css">
 
 <style>
-  .page-wrapper { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+  .page-wrapper { max-width: 1000px; margin: 36px auto; padding: 0 20px; }
   
+  /* Input Card */
+  .card { 
+    padding:24px; 
+    border-radius:16px; 
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); 
+    box-shadow:0 10px 30px rgba(2,6,23,0.55); 
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+
+  textarea { 
+    width:100%; 
+    padding:16px; 
+    border-radius:12px; 
+    background:rgba(0,0,0,0.2); 
+    border:1px solid rgba(255,255,255,0.1); 
+    color:inherit; 
+    font-size: 1rem;
+    transition: 0.2s;
+    font-family: inherit;
+    resize: vertical;
+  }
+  textarea:focus {
+    border-color: #7f5af0;
+    outline: none;
+    background:rgba(0,0,0,0.3);
+  }
+
+  /* Diagram Output Area */
   .diagram-container {
     margin-top: 30px;
-    background: #fff; 
+    background: #ffffff; /* White bg for diagram visibility */
     padding: 30px;
     border-radius: 16px;
     min-height: 300px;
@@ -22,11 +50,33 @@
     align-items: center;
     overflow-x: auto;
     box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    animation: slideUp 0.5s ease-out;
   }
+  
+  /* Buttons */
+  .btn-primary { 
+    padding:12px 24px; 
+    border-radius:12px; 
+    border:none; 
+    background:linear-gradient(90deg,#7f5af0,#5eead4); 
+    color:#021; 
+    font-weight:700; 
+    cursor:pointer;
+    transition: transform 0.1s;
+  }
+  .btn-primary:active { transform: scale(0.96); }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
-  [data-theme="dark"] .diagram-container {
-    background: rgba(255, 255, 255, 0.95);
+  /* Loader */
+  .loader { 
+    width:24px; height:24px; border-radius:50%; 
+    border:3px solid rgba(255,255,255,0.1); 
+    border-top-color:#5eead4; 
+    animation:spin 900ms linear infinite; 
   }
+  .hidden { display: none; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  @keyframes slideUp { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:translateY(0)} }
 </style>
 </head>
 
@@ -35,16 +85,17 @@
 <aside class="sidebar" id="sidebar">
   <div class="brand">AI Study</div>
   <a href="../index.html">Home</a>
+  <a href="flashcards.html">Flashcards</a>
   <a href="summarize.html">Summarize PDF</a>
   <a href="make-notes.html">Make Notes</a>
-  <a href="flashcards.html">Flashcards</a>
-  <a href="mindmap.html" class="active">AI Mind Map</a>
   <a href="mcq.html">Make MCQ</a>
   <a href="explain.html">Explain</a>
+  <a href="mindmap.html" class="active">Mind Map</a>
   <a href="qna.html">QnA</a>
-  <a href="notes.html">History</a>
+  <a href="notes.html">Notes History</a>
   <div class="spacer"></div>
-  <a href="profile.html">Profile</a>
+  <a href="profile.html">Update Profile</a>
+  <a href="delete-account.html">Delete Account</a>
 </aside>
 
 <main class="content-with-sidebar">
@@ -53,24 +104,24 @@
     <p class="center mt-8">Visualize complex topics with intelligent flowcharts.</p>
 
     <div class="card mt-18">
-      <textarea id="mm-text" rows="4" placeholder="Enter a topic or paste text to visualize (e.g., 'Process of Digestion')..."></textarea>
+      <textarea id="mm-text" rows="5" placeholder="Enter a topic or paste text to visualize (e.g., 'Process of Digestion')..."></textarea>
       
-      <div style="display:flex; gap:12px; margin-top:16px;">
+      <div style="display:flex; gap:16px; margin-top:20px; align-items:center;">
         <button id="mm-btn" class="btn-primary">Generate Diagram</button>
         <span id="loader" class="loader hidden"></span>
       </div>
     </div>
+
+    <div id="error-msg" style="color:#ff4d6d; text-align:center; margin-top:20px;"></div>
 
     <div id="diagram-wrapper" class="hidden">
        <div class="diagram-container">
           <div class="mermaid" id="mermaid-output"></div>
        </div>
        <div style="text-align:center; margin-top:10px; opacity:0.7; font-size:0.9rem;">
-          💡 Tip: Right-click the image to save it.
+          💡 Tip: You can take a screenshot of the diagram to save it.
        </div>
     </div>
-    
-    <div id="error-msg" style="color:#ff4d6d; text-align:center; margin-top:20px;"></div>
 
   </div>
 </main>
@@ -89,10 +140,14 @@
   const output = document.getElementById("mermaid-output");
   const errDiv = document.getElementById("error-msg");
   const tokenKey = "ai_study_token";
+  const API = window.API_BASE || "";
 
   btn.addEventListener("click", async () => {
     const text = textEl.value.trim();
-    if(!text) { alert("Please enter some text."); return; }
+    if(!text) { 
+        errDiv.innerText = "Please enter some text or a topic."; 
+        return; 
+    }
 
     // Reset UI
     wrapper.classList.add("hidden");
@@ -105,7 +160,8 @@
       const token = localStorage.getItem(tokenKey);
       if(token) headers["Authorization"] = "Bearer " + token;
 
-      const resp = await fetch(`${window.API_BASE}/make-mindmap`, {
+      // 👇 FIXED: Added /api/study prefix
+      const resp = await fetch(`${API}/api/study/make-mindmap`, {
         method: "POST",
         headers,
         body: JSON.stringify({ text })
@@ -117,11 +173,14 @@
 
       // Render Logic
       const code = data.mermaid_code;
+      if (!code) throw new Error("No diagram code generated.");
+
       output.removeAttribute("data-processed"); // Reset mermaid state
       output.innerHTML = code; // Insert raw text
       
       wrapper.classList.remove("hidden");
       
+      // Render the diagram
       await mermaid.run({
         nodes: [output]
       });

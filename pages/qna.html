@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="../styles.css">
 
 <style>
-  .page-wrapper { max-width:920px; margin:36px auto; }
+  .page-wrapper { max-width:920px; margin:36px auto; padding: 0 20px; }
   
   /* Input Card */
   .card { 
@@ -33,10 +33,11 @@
   textarea:focus { border-color: #7f5af0; outline: none; background:rgba(0,0,0,0.3); }
 
   /* Question Row */
-  .input-row { display:flex; gap:12px; margin-top:16px; align-items:flex-start; }
+  .input-row { display:flex; gap:12px; margin-top:16px; align-items:flex-start; flex-wrap: wrap; }
   
   input[type="text"] {
-    width: 100%;
+    flex-grow: 1;
+    min-width: 250px;
     padding: 14px;
     border-radius: 12px;
     background: rgba(0,0,0,0.2);
@@ -62,7 +63,7 @@
   .btn-primary:active { transform: scale(0.97); }
 
   /* ----------------------- */
-  /* RESULT STYLES           */
+  /* RESULT STYLES          */
   /* ----------------------- */
   
   .result-container { margin-top: 30px; animation: fadeIn 0.4s ease; }
@@ -116,6 +117,7 @@
 <aside class="sidebar" id="sidebar">
   <div class="brand">AI Study</div>
   <a href="../index.html">Home</a>
+  <a href="flashcards.html">Flashcards</a>
   <a href="summarize.html">Summarize PDF</a>
   <a href="make-notes.html">Make Notes</a>
   <a href="mcq.html">Make MCQ</a>
@@ -184,8 +186,8 @@
       const token = localStorage.getItem(tokenKey);
       if(token) headers["Authorization"] = "Bearer " + token;
 
-      // Send both text (context) and question
-      const resp = await fetch(API + "/qna", { 
+      // 👇 FIXED: Added /api/study prefix
+      const resp = await fetch(`${API}/api/study/qna`, { 
         method: "POST",
         headers,
         body: JSON.stringify({ text: text, question: question }) 
@@ -239,9 +241,9 @@
         <div class="follow-label">Suggested Follow-ups:</div>
         <div class="chips-container">
           ${data.follow_ups.map(q => {
-             // Escape single quotes for the inline onclick handler
+             // Escape single quotes correctly for the inline function call
              const safeQ = q.replace(/'/g, "\\'");
-             return `<div class="chip" onclick="setInputAndAsk('${esc(safeQ)}')">${esc(q)}</div>`;
+             return `<div class="chip" onclick="setInputAndAsk('${safeQ}')">${esc(q)}</div>`;
           }).join('')}
         </div>` : '' }
 

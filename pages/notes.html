@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="../styles.css">
 
 <style>
-  .page-wrapper { max-width:960px; margin:36px auto; }
+  .page-wrapper { max-width:960px; margin:36px auto; padding: 0 20px; }
   
   .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
   
@@ -76,6 +76,10 @@
   ul { padding-left: 20px; color: rgba(255,255,255,0.8); line-height: 1.6; }
   li { margin-bottom: 8px; }
 
+  /* Loader */
+  .loader { width:30px; height:30px; border-radius:50%; border:3px solid rgba(255,255,255,0.1); border-top-color:#7f5af0; animation:spin 900ms linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
 </style>
 </head>
 <body>
@@ -83,6 +87,7 @@
 <aside class="sidebar" id="sidebar">
   <div class="brand">AI Study</div>
   <a href="../index.html">Home</a>
+  <a href="flashcards.html">Flashcards</a>
   <a href="summarize.html">Summarize PDF</a>
   <a href="make-notes.html">Make Notes</a>
   <a href="mcq.html">Make MCQ</a>
@@ -97,10 +102,10 @@
 <main class="content-with-sidebar">
   <div class="page-wrapper container">
     <h1 class="h-gradient">Your History</h1>
-    <p class="center mt-8">Access your past summaries, notes, and QnA sessions.</p>
+    <p class="center mt-8">Access your past summaries, notes, quizzes, and sessions.</p>
 
+    <div id="loader" class="loader" style="margin: 40px auto; display:block;"></div>
     <div id="history-list" class="history-grid mt-18"></div>
-    <div id="loader" class="loader" style="margin: 20px auto; display:block;"></div>
   </div>
 </main>
 
@@ -130,12 +135,25 @@
     try {
       const headers = { "Content-Type": "application/json" };
       const token = localStorage.getItem(tokenKey);
-      if(!token) { window.location.href = "login.html"; return; }
+      
+      // If no token, redirect to login is handled by the user flow usually, 
+      // but here we just show empty state or redirect if strict.
+      if(!token) { 
+         listEl.innerHTML = "<p class='center' style='color:#ff4d6d'>Please log in to view history.</p>";
+         loader.style.display = "none";
+         return; 
+      }
       
       headers["Authorization"] = "Bearer " + token;
 
-      const resp = await fetch(API + "/history", { headers });
-      if(resp.status === 401) { window.location.href = "login.html"; return; }
+      // 👇 FIXED: Correct Endpoint (/api/history/get)
+      const resp = await fetch(`${API}/api/history/get`, { headers });
+      
+      if(resp.status === 401) { 
+         // Token expired or invalid
+         listEl.innerHTML = "<p class='center' style='color:#ff4d6d'>Session expired. Please log in again.</p>";
+         return; 
+      }
 
       const data = await resp.json();
       renderList(data.history || []);
@@ -150,7 +168,7 @@
   // --- 2. RENDER CARD LIST ---
   function renderList(items) {
     if(!items || items.length === 0) {
-      listEl.innerHTML = "<p class='center' style='grid-column:1/-1; color:rgba(255,255,255,0.5)'>No history found. Start using tools to generate content!</p>";
+      listEl.innerHTML = "<p class='center' style='grid-column:1/-1; color:rgba(255,255,255,0.5); margin-top:20px;'>No history found. Start using the AI tools to generate content!</p>";
       return;
     }
 
@@ -159,19 +177,19 @@
       let icon = "📄";
       let label = "Document";
       
-      // Determine Title & Preview safely (No Slicing Errors!)
+      // Determine Title & Preview safely
       let displayTitle = "Untitled";
       let displayPreview = "Click to view content...";
       
       const res = item.result || {};
       const inp = item.input || {};
 
-      // LOGIC: Try to get a smart title from the Result JSON, fallback to Input Filename/Text
+      // LOGIC: Smart Title & Preview extraction
       
       // A. SUMMARIES
       if (item.type === 'pdf_summarize' || item.type === 'summarize') {
          icon = "📑"; label = "Summary";
-         const sum = res.summary || res; // Handle wrapper
+         const sum = res.summary || res; 
          displayTitle = sum.title || inp.filename || "PDF Summary";
          displayPreview = sum.overview || "Generated summary of document.";
       }
@@ -193,18 +211,29 @@
       else if (item.type === 'make_mcq') {
          icon = "✅"; label = "Quiz";
          displayTitle = "MCQ Practice Set";
-         displayPreview = "Multiple choice questions generated from text.";
+         displayPreview = `Generated ${Array.isArray(res) ? res.length : 5} practice questions.`;
       }
       // E. EXPLAIN
       else if (item.type === 'explain') {
          icon = "🧠"; label = "Explanation";
          displayTitle = inp.topic || "Topic Explanation";
          const exp = res.explanation || res;
-         // Try to grab first paragraph if array
          if(Array.isArray(exp) && exp[0]) displayPreview = exp[0].paragraph || "Deep dive explanation.";
       }
+      // F. MINDMAP
+      else if (item.type === 'mindmap') {
+         icon = "🗺️"; label = "Mind Map";
+         displayTitle = "Visual Diagram";
+         displayPreview = "Mermaid.js flowchart generated from text.";
+      }
+      // G. FLASHCARDS
+      else if (item.type === 'flashcards') {
+         icon = "🗂️"; label = "Flashcards";
+         displayTitle = "Study Deck";
+         displayPreview = `Set of ${Array.isArray(res) ? res.length : 'multiple'} flashcards.`;
+      }
 
-      // Safe truncate for display
+      // Safe truncate
       if(displayTitle.length > 60) displayTitle = displayTitle.substring(0, 60) + "...";
       if(typeof displayPreview === 'string' && displayPreview.length > 100) displayPreview = displayPreview.substring(0, 100) + "...";
 
@@ -283,18 +312,33 @@
          html += `<p style="font-style:italic; color:#a5b4fc;">"${esc(qna.evidence)}"</p>`;
        }
     }
-    // -- D. MCQ Handler --
+    // -- D. MCQ Handler (IMPROVED) --
     else if (item.type === 'make_mcq') {
-       const mcqs = data.mcqs_data || data; // Assuming backend sends structured list
-       // If backend sends text block
-       if (typeof mcqs === 'string') {
-          html += `<div class="modal-title">Generated MCQs</div>`;
-          html += `<pre style="white-space:pre-wrap; color:#ddd;">${esc(mcqs)}</pre>`;
+       const mcqs = data.mcqs_data || data; 
+       html += `<div class="modal-title">Generated Quiz</div>`;
+       
+       if (Array.isArray(mcqs)) {
+          mcqs.forEach((q, i) => {
+             html += `<div style="margin-bottom:20px; background:rgba(255,255,255,0.05); padding:20px; border-radius:12px;">`;
+             html += `<div style="font-weight:bold; color:#fff; margin-bottom:12px; font-size:1.1rem;">${i+1}. ${esc(q.question)}</div>`;
+             
+             html += `<ul style="list-style:none; padding-left:0;">`;
+             q.options.forEach(opt => {
+                const isCorrect = opt === q.correctAnswer;
+                // Highlight correct answer green, others gray
+                const style = isCorrect ? 'color:#5eead4; font-weight:bold;' : 'color:rgba(255,255,255,0.7);';
+                const icon = isCorrect ? '✅ ' : '⚪ ';
+                html += `<li style="${style}; margin-bottom:6px;">${icon}${esc(opt)}</li>`;
+             });
+             html += `</ul>`;
+             
+             if(q.explanation) {
+                html += `<div style="margin-top:12px; font-size:0.9rem; color:#a5b4fc; border-left:3px solid #7f5af0; padding-left:12px; padding-top:4px; padding-bottom:4px; background:rgba(127,90,240,0.1)">💡 ${esc(q.explanation)}</div>`;
+             }
+             html += `</div>`;
+          });
        } else {
-          // If backend sends array
-          html += `<div class="modal-title">Generated MCQs</div>`;
-          // (Add parsing logic here if you stored structured MCQs, otherwise fall back to raw dump)
-          html += `<pre>${JSON.stringify(mcqs, null, 2)}</pre>`;
+          html += `<pre style="white-space:pre-wrap; color:#ddd;">${esc(mcqs)}</pre>`;
        }
     }
     // -- E. Explain Handler --
@@ -312,10 +356,10 @@
          html += `<pre>${esc(JSON.stringify(exp, null, 2))}</pre>`;
        }
     }
-    // -- Fallback --
+    // -- F. MindMap & Flashcards (Fallbacks) --
     else {
-      html += `<div class="modal-title">Raw Data</div>`;
-      html += `<pre>${esc(JSON.stringify(data, null, 2))}</pre>`;
+      html += `<div class="modal-title">${item.type.toUpperCase()}</div>`;
+      html += `<pre style="white-space:pre-wrap; color:#aaa;">${esc(JSON.stringify(data, null, 2))}</pre>`;
     }
 
     modalBody.innerHTML = html;

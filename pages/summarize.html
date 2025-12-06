@@ -7,33 +7,32 @@
 <link rel="stylesheet" href="../styles.css">
 
 <style>
-  .page-wrapper { max-width:960px; margin:36px auto; }
+  .page-wrapper { max-width:960px; margin:36px auto; padding: 0 20px; }
   
   /* Upload Card */
   .upload-card {
-    padding:30px;
+    padding:40px;
     border-radius:16px;
     background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-    border: 1px dashed rgba(255,255,255,0.2);
+    border: 2px dashed rgba(255,255,255,0.2);
     text-align: center;
     transition: 0.2s;
+    cursor: pointer;
+    position: relative;
   }
   .upload-card:hover { border-color: #7f5af0; background: rgba(127,90,240,0.05); }
 
-  input[type="file"] { display:none; }
-  
-  .file-label {
-    display:inline-block;
-    padding:12px 24px;
-    background:rgba(255,255,255,0.1);
-    border-radius:10px;
-    cursor:pointer;
-    font-weight:600;
-    margin-bottom:12px;
-    transition:0.2s;
-    border: 1px solid rgba(255,255,255,0.1);
+  input[type="file"] { 
+    position: absolute; 
+    top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    opacity: 0; 
+    cursor: pointer; 
   }
-  .file-label:hover { background: #7f5af0; color:#fff; border-color:transparent; }
+  
+  .upload-icon { font-size: 3rem; margin-bottom: 16px; display: block; opacity: 0.8; }
+  .file-label-text { font-size: 1.1rem; font-weight: 600; color: #fff; display: block; margin-bottom: 8px; }
+  .file-hint { font-size: 0.9rem; color: rgba(255,255,255,0.5); }
 
   .btn-primary {
     padding:12px 24px;
@@ -45,6 +44,7 @@
     cursor:pointer;
     font-size: 1rem;
     transition: transform 0.1s;
+    margin-top: 20px;
   }
   .btn-primary:active { transform: scale(0.98); }
 
@@ -182,11 +182,15 @@
     <p class="center mt-8">Upload a Resume, Research Paper, or Book Chapter for a structured summary.</p>
 
     <div class="upload-card mt-18">
-      <label for="pdf-input" class="file-label" id="file-label-text">Click to Select PDF</label>
+      <div class="upload-icon">📂</div>
+      <span class="file-label-text" id="file-label-text">Click or Drag PDF Here</span>
+      <span class="file-hint">Max file size: 20MB</span>
       <input type="file" id="pdf-input" accept="application/pdf">
-      <br>
-      <button id="upload-btn" class="btn-primary mt-8">Generate Summary</button>
-      <span id="loader" class="loader hidden"></span>
+    </div>
+
+    <div style="text-align:center;">
+       <button id="upload-btn" class="btn-primary">Generate Summary</button>
+       <span id="loader" class="loader hidden"></span>
     </div>
 
     <div id="summary-result" style="margin-top:40px;"></div>
@@ -209,7 +213,10 @@
 
   // Show filename on select
   fileInput.addEventListener("change", (e) => {
-    if(e.target.files[0]) labelText.innerText = e.target.files[0].name;
+    if(e.target.files[0]) {
+        labelText.innerText = "Selected: " + e.target.files[0].name;
+        labelText.style.color = "#5eead4";
+    }
   });
 
   // ----------------------------------------------------
@@ -304,7 +311,8 @@
       const token = localStorage.getItem(tokenKey);
       if(token) headers["Authorization"] = "Bearer " + token;
 
-      const resp = await fetch(API + "/summarize", {
+      // 👇 FIXED: Added /api/pdf prefix
+      const resp = await fetch(API + "/api/pdf/summarize", {
         method: "POST",
         headers,
         body: formData
@@ -313,7 +321,6 @@
       const data = await resp.json();
       
       // Handle the nested structure often returned by wrappers
-      // Check if data has a 'summary' key which contains the JSON object
       const content = data.summary || data; 
       
       out.innerHTML = renderSummary(content);

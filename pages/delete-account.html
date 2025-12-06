@@ -1,42 +1,182 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <title>Delete Account — AI Study</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="../styles.css">
+
+<script
+  async
+  crossorigin="anonymous"
+  data-clerk-publishable-key="pk_test_c3RlYWR5LXNocmV3LTgxLmNsZXJrLmFjY291bnRzLmRldiQ"
+  src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+  type="text/javascript"
+></script>
+
+<style>
+  .page-wrapper { max-width: 600px; margin: 60px auto; padding: 0 20px; }
+  
+  /* Danger Card */
+  .card { 
+    padding:30px; 
+    border-radius:16px; 
+    background: linear-gradient(180deg, rgba(255, 91, 110, 0.05), rgba(255, 0, 0, 0.02)); 
+    box-shadow:0 10px 30px rgba(0,0,0,0.4); 
+    border: 1px solid rgba(255, 91, 110, 0.2);
+    text-align: center;
+  }
+
+  input[type="text"] { 
+    width:100%; 
+    padding:14px; 
+    border-radius:12px; 
+    background:rgba(0,0,0,0.3); 
+    border:1px solid rgba(255,255,255,0.1); 
+    color:#fff; 
+    font-size: 1rem;
+    transition: 0.2s;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  input[type="text"]:focus {
+    border-color: #ff5b6e;
+    outline: none;
+    background:rgba(0,0,0,0.4);
+  }
+
+  /* Danger Button */
+  .btn-danger { 
+    width: 100%;
+    padding:14px 20px; 
+    border-radius:12px; 
+    border:none; 
+    background: #ff5b6e; 
+    color: white; 
+    font-weight:700; 
+    cursor:pointer;
+    transition: 0.2s;
+    opacity: 0.5;
+    pointer-events: none; /* Disabled by default */
+  }
+  
+  /* Active state when "DELETE" is typed */
+  .btn-danger.active {
+    opacity: 1;
+    pointer-events: all;
+    box-shadow: 0 0 15px rgba(255, 91, 110, 0.4);
+  }
+  .btn-danger.active:hover { background: #ff3b52; }
+
+  .warning-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .loader { width:20px; height:20px; border-radius:50%; border:3px solid rgba(255,255,255,0.2); border-top-color:#fff; animation:spin 1s linear infinite; display:inline-block; vertical-align: middle; margin-left: 10px;}
+  @keyframes spin { to{transform:rotate(360deg);} }
+  .hidden { display: none; }
+
+</style>
 </head>
 <body>
+
 <aside class="sidebar" id="sidebar">
   <div class="brand">AI Study</div>
   <a href="../index.html">Home</a>
+  <a href="flashcards.html">Flashcards</a>
   <a href="summarize.html">Summarize PDF</a>
   <a href="make-notes.html">Make Notes</a>
   <a href="mcq.html">Make MCQ</a>
   <a href="explain.html">Explain</a>
+  <a href="mindmap.html">Mind Map</a>
   <a href="qna.html">QnA</a>
   <a href="notes.html">Notes History</a>
   <div class="spacer"></div>
-  <a href="profile.html">Profile</a>
+  <a href="profile.html">Update Profile</a>
   <a href="delete-account.html" class="active">Delete Account</a>
 </aside>
 
 <main class="content-with-sidebar">
   <div class="page-wrapper container">
-    <h1 class="h-gradient">Delete Account</h1>
-    <p class="center mt-18">This action is permanent. Type <strong>DELETE</strong> to confirm.</p>
+    
+    <div class="card">
+      <div class="warning-icon">⚠️</div>
+      <h2 style="color:#ff5b6e; margin-bottom:10px;">Delete Account</h2>
+      <p style="color:rgba(255,255,255,0.7); line-height:1.5; margin-bottom:24px;">
+        This action is <strong>permanent</strong>. All your notes, summaries, history, and account data will be wiped immediately.
+      </p>
 
-    <div class="card mt-18">
-      <input id="delete-confirm" placeholder="Type DELETE to confirm" style="width:100%;padding:12px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:#fff">
-      <div style="margin-top:12px;display:flex;gap:12px">
-        <button id="delete-submit" class="btn-primary" style="background:#ff5b6e">Delete Account</button>
-        <button id="cancel-delete" class="btn-primary" style="background:transparent;border:1px solid rgba(255,255,255,0.06)">Cancel</button>
+      <div style="margin-bottom: 20px;">
+        <label style="display:block; margin-bottom:8px; font-size:0.9rem; color:rgba(255,255,255,0.5);">Type <strong>DELETE</strong> to confirm</label>
+        <input id="delete-input" type="text" placeholder="DELETE">
       </div>
-      <div id="delete-result" style="margin-top:12px;color:var(--muted)"></div>
+
+      <button id="delete-submit" class="btn-danger">
+        Permanently Delete Account
+      </button>
+      <span id="loader" class="loader hidden"></span>
+
+      <div id="error-msg" style="color:#ff5b6e; margin-top:16px; font-size:0.9rem;"></div>
     </div>
+
+    <div style="text-align:center; margin-top:20px;">
+        <a href="profile.html" style="color:rgba(255,255,255,0.5); text-decoration:none; font-size:0.9rem;">Cancel, keep my account</a>
+    </div>
+
   </div>
 </main>
 
-<script src="../app.js"></script>
+<script>
+  const publishableKey = "pk_test_c3RlYWR5LXNocmV3LTgxLmNsZXJrLmFjY291bnRzLmRldiQ"; 
+  const input = document.getElementById("delete-input");
+  const btn = document.getElementById("delete-submit");
+  const loader = document.getElementById("loader");
+  const errDiv = document.getElementById("error-msg");
+
+  // 1. Logic to enable button ONLY when "DELETE" is typed
+  input.addEventListener("input", (e) => {
+     if(e.target.value === "DELETE") {
+         btn.classList.add("active");
+     } else {
+         btn.classList.remove("active");
+     }
+  });
+
+  // 2. Handle Deletion
+  btn.addEventListener("click", async () => {
+     if(input.value !== "DELETE") return;
+
+     btn.innerText = "Deleting...";
+     btn.classList.remove("active"); // Disable click
+     loader.classList.remove("hidden");
+     errDiv.innerText = "";
+
+     try {
+        // Load Clerk
+        await Clerk.load({ publishableKey });
+        
+        if (!Clerk.user) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        // Perform Deletion
+        await Clerk.user.delete();
+
+        // Redirect to Home/Login on success
+        window.location.href = "../index.html";
+
+     } catch (err) {
+        console.error(err);
+        errDiv.innerText = "Error: " + (err.message || "Could not delete account.");
+        btn.innerText = "Permanently Delete Account";
+        btn.classList.add("active");
+        loader.classList.add("hidden");
+     }
+  });
+</script>
+
 </body>
 </html>

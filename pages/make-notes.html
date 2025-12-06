@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="../styles.css">
 
 <style>
-  .page-wrapper { max-width:960px; margin:36px auto; }
+  .page-wrapper { max-width:960px; margin:36px auto; padding: 0 20px; }
   
   /* Input Area */
   .card { 
@@ -85,8 +85,12 @@
     padding: 24px;
     margin-bottom: 24px;
     transition: 0.2s;
+    border: 1px solid rgba(255,255,255,0.02);
   }
-  .note-section:hover { background: rgba(255,255,255,0.04); }
+  .note-section:hover { 
+    background: rgba(255,255,255,0.04); 
+    transform: translateX(5px);
+  }
 
   .section-heading {
     font-size: 1.4rem;
@@ -211,18 +215,9 @@
           </div>
         `;
       });
-    } else if (data.notes && Array.isArray(data.notes)) {
-      // Fallback for old flat format or simple array return
-       html += `
-          <div class="note-section">
-            <ul class="note-list">
-              ${data.notes.map(pt => `<li>${parseMarkdown(pt)}</li>`).join('')}
-            </ul>
-          </div>
-        `;
-    } else if (typeof data.notes === 'string') {
-        // Fallback for plain string
-        html += `<div class="note-section"><p style="white-space:pre-wrap">${esc(data.notes)}</p></div>`;
+    } else {
+       // Fallback for unexpected format
+       html += `<div class="note-section"><p>No structured sections found.</p></div>`;
     }
 
     html += `</div>`; // Close container
@@ -242,7 +237,8 @@
       const token = localStorage.getItem(tokenKey);
       if(token) headers["Authorization"] = "Bearer " + token;
 
-      const resp = await fetch(API + "/make-notes", {
+      // 👇 FIXED: Added /api/study prefix
+      const resp = await fetch(`${API}/api/study/make-notes`, {
         method: "POST",
         headers,
         body: JSON.stringify({ text })
@@ -251,7 +247,7 @@
       const data = await resp.json();
       
       // Determine where the content lives based on backend structure
-      // Use data.notes_data if backend wraps it, or just data if it returns direct JSON
+      // Backend returns: { "notes_data": { title: "...", sections: [...] } }
       const content = data.notes_data || data; 
 
       out.innerHTML = renderNotes(content);
