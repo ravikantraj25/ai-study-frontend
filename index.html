@@ -7,15 +7,21 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+<script
+  async
+  crossorigin="anonymous"
+  data-clerk-publishable-key="pk_test_c3RlYWR5LXNocmV3LTgxLmNsZXJrLmFjY291bnRzLmRldiQ"
+  src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+  type="text/javascript"
+></script>
+
 <style>
 /* ---------- VARIABLES & THEMES ---------- */
 :root {
-    /* Dark Theme (Default) */
     --bg-color: #050507;
     --text-main: #ffffff;
     --text-muted: #a1a1aa;
     --primary-gradient: linear-gradient(135deg, #6366f1, #3b82f6);
-    --secondary-gradient: linear-gradient(135deg, #8b5cf6, #ec4899);
     --nav-bg: rgba(5, 5, 7, 0.75);
     --card-bg: rgba(255, 255, 255, 0.03);
     --card-border: rgba(255, 255, 255, 0.08);
@@ -25,7 +31,6 @@
 }
 
 [data-theme="light"] {
-    /* Light Theme Overrides */
     --bg-color: #f8fafc;
     --text-main: #0f172a;
     --text-muted: #64748b;
@@ -121,7 +126,7 @@ body {
     padding: 8px 20px;
     border-radius: 6px;
     border: none;
-    background: var(--text-main); /* Inverted for contrast */
+    background: var(--text-main);
     color: var(--bg-color);
     cursor: pointer;
     transition: 0.25s;
@@ -220,10 +225,9 @@ body {
 
 .grid {
     display: grid;
-    /* Responsive Grid: Cards will fit available space */
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 24px;
-    justify-content: center; /* Keeps cards centered if last row is incomplete */
+    justify-content: center;
 }
 
 /* ---------- PROFESSIONAL CARD ---------- */
@@ -281,7 +285,7 @@ footer {
 @media (max-width: 768px) {
     .navbar { padding: 15px 20px; }
     .hero h1 { font-size: 42px; }
-    .nav-links { display: none; } /* Simplified mobile view */
+    .nav-links { display: none; }
 }
 </style>
 </head>
@@ -295,12 +299,13 @@ footer {
         <div class="nav-links">
             <a href="index.html">Home</a>
             <a href="pages/summarize.html">Tools</a>
+            
             <a id="nav-login" href="pages/login.html">Login</a>
             <a id="nav-register" href="pages/register.html">Register</a>
             <a id="nav-profile" href="pages/profile.html" style="display:none;">Profile</a>
         </div>
 
-        <button id="nav-logout" class="btn-small" style="display:none;">Logout</button>
+        <button id="nav-logout" class="btn-small" style="display:none; margin-right: 15px;">Logout</button>
 
         <button class="theme-toggle" id="theme-btn" aria-label="Toggle Dark Mode">
             <svg id="moon-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
@@ -355,10 +360,10 @@ footer {
             <p>Stuck on a concept? Get a tutor-style explanation with real-world analogies.</p>
         </div>
         <div class="card" onclick="location.href='pages/flashcards.html'" style="border-color: rgba(99, 102, 241, 0.4);">
-        <div class="icon">🃏</div>
-        <h3>Flashcards</h3>
-        <p>Memorize key concepts with active recall flip-cards generated instantly.</p>
-</div>
+            <div class="icon">🃏</div>
+            <h3>Flashcards</h3>
+            <p>Memorize key concepts with active recall flip-cards generated instantly.</p>
+        </div>
     </div>
 </section>
 
@@ -367,58 +372,68 @@ footer {
 </footer>
 
 <script>
-// ---------- AUTH LOGIC ----------
-const token = localStorage.getItem("ai_study_token");
-const loginBtn = document.getElementById("nav-login");
-const registerBtn = document.getElementById("nav-register");
-const profileBtn = document.getElementById("nav-profile");
-const logoutBtn = document.getElementById("nav-logout");
+    // ---------- AUTH LOGIC (CLERK) ----------
+    window.addEventListener("load", async function () {
+        // 1. Load Clerk
+        await Clerk.load();
 
-if (token) {
-    if(loginBtn) loginBtn.style.display = "none";
-    if(registerBtn) registerBtn.style.display = "none";
-    if(profileBtn) profileBtn.style.display = "block";
-    if(logoutBtn) logoutBtn.style.display = "block";
-}
+        const loginBtn = document.getElementById("nav-login");
+        const registerBtn = document.getElementById("nav-register");
+        const profileBtn = document.getElementById("nav-profile");
+        const logoutBtn = document.getElementById("nav-logout");
 
-logoutBtn?.addEventListener("click", () => {
-    localStorage.removeItem("ai_study_token");
-    window.location.reload();
-});
+        // 2. Check if user is logged in
+        if (Clerk.user) {
+            // User IS logged in: Hide login/register, Show Profile/Logout
+            if(loginBtn) loginBtn.style.display = "none";
+            if(registerBtn) registerBtn.style.display = "none";
+            if(profileBtn) profileBtn.style.display = "block";
+            if(logoutBtn) logoutBtn.style.display = "block";
+        } else {
+            // User IS NOT logged in: Show login/register
+            if(loginBtn) loginBtn.style.display = "block";
+            if(registerBtn) registerBtn.style.display = "block";
+            if(profileBtn) profileBtn.style.display = "none";
+            if(logoutBtn) logoutBtn.style.display = "none";
+        }
 
-// ---------- DARK/LIGHT MODE LOGIC ----------
-const htmlEl = document.documentElement;
-const themeBtn = document.getElementById("theme-btn");
-const sunIcon = document.getElementById("sun-icon");
-const moonIcon = document.getElementById("moon-icon");
+        // 3. Handle Logout Click
+        if(logoutBtn) {
+            logoutBtn.addEventListener("click", async () => {
+                await Clerk.signOut();
+                window.location.reload();
+            });
+        }
+    });
 
-// 1. Check LocalStorage or System Preference
-const currentTheme = localStorage.getItem("theme") || 
-                     (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+    // ---------- DARK/LIGHT MODE LOGIC (UNCHANGED) ----------
+    const htmlEl = document.documentElement;
+    const themeBtn = document.getElementById("theme-btn");
+    const sunIcon = document.getElementById("sun-icon");
+    const moonIcon = document.getElementById("moon-icon");
 
-// 2. Apply initial theme
-setTheme(currentTheme);
+    const currentTheme = localStorage.getItem("theme") || 
+                         (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
 
-// 3. Toggle Event Listener
-themeBtn.addEventListener("click", () => {
-    const newTheme = htmlEl.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    setTheme(newTheme);
-});
+    setTheme(currentTheme);
 
-// Helper function to set theme
-function setTheme(theme) {
-    htmlEl.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-    
-    // Icon toggle
-    if (theme === "dark") {
-        sunIcon.style.display = "none";
-        moonIcon.style.display = "block";
-    } else {
-        sunIcon.style.display = "block";
-        moonIcon.style.display = "none";
+    themeBtn.addEventListener("click", () => {
+        const newTheme = htmlEl.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        setTheme(newTheme);
+    });
+
+    function setTheme(theme) {
+        htmlEl.setAttribute("data-theme", theme);
+        localStorage.setItem("theme", theme);
+        
+        if (theme === "dark") {
+            sunIcon.style.display = "none";
+            moonIcon.style.display = "block";
+        } else {
+            sunIcon.style.display = "block";
+            moonIcon.style.display = "none";
+        }
     }
-}
 </script>
 
 </body>

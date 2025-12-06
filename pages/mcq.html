@@ -24,6 +24,7 @@
     border:1px solid rgba(255,255,255,0.06);
     color:inherit;
     resize:vertical;
+    font-family: inherit;
   }
 
   .btn-primary {
@@ -33,8 +34,12 @@
     background:linear-gradient(90deg,#7f5af0,#5eead4);
     color:#021;
     font-weight:700;
-    cursor:pointer
+    cursor:pointer;
+    transition: opacity 0.2s;
   }
+  
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
   .loader {
     width:16px;
@@ -48,38 +53,108 @@
 
   .hidden { display:none; }
 
-  /* MCQ UI */
+  /* --- PROFESSIONAL MCQ UI --- */
   .mcq-card {
-    margin-top:18px;
-    padding:18px;
-    border-radius:14px;
+    margin-top:24px;
+    padding:20px;
+    border-radius:16px;
     background:rgba(255,255,255,0.03);
-    box-shadow:0 6px 20px rgba(2,6,23,0.5);
+    border: 1px solid rgba(255,255,255,0.05);
+    box-shadow:0 4px 20px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
   }
 
   .mcq-question {
     font-size:18px;
-    font-weight:700;
-    margin-bottom:12px;
+    font-weight:600;
+    margin-bottom:16px;
+    line-height: 1.5;
+    color: #f1f5f9;
   }
 
+  /* Interactive Options */
   .mcq-option {
-    padding:10px 14px;
-    background:rgba(255,255,255,0.06);
-    margin-bottom:8px;
+    padding:14px 16px;
+    background:rgba(255,255,255,0.04);
+    margin-bottom:10px;
     border-radius:10px;
-    transition:0.25s;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
   }
 
   .mcq-option:hover {
-    background:rgba(255,255,255,0.12);
+    background:rgba(255,255,255,0.08);
+    transform: translateX(4px);
   }
 
-  .correct {
-    border-left:4px solid #5eead4;
+  /* --- GAME STATES (Correct/Wrong) --- */
+  
+  /* User Clicked Correct */
+  .mcq-option.selected-correct {
+    background: rgba(45, 212, 191, 0.15); 
+    border-color: #5eead4;
+    color: #5eead4;
+  }
+
+  /* User Clicked Wrong */
+  .mcq-option.selected-wrong {
+    background: rgba(239, 68, 68, 0.15); 
+    border-color: #ef4444;
+    color: #ef4444;
+  }
+
+  /* Reveal Correct Answer (when user gets it wrong) */
+  .mcq-option.reveal-correct {
+    border-color: #5eead4;
+    box-shadow: 0 0 10px rgba(94, 234, 212, 0.1);
+  }
+
+  /* Disable card after answering */
+  .mcq-card.answered {
+    opacity: 0.95;
+  }
+  .mcq-card.answered .mcq-option {
+    cursor: default;
+    pointer-events: none; /* Disable further clicks */
+  }
+  .mcq-card.answered .mcq-option:hover {
+    transform: none;
+  }
+
+  /* Explanation Box - Hidden until answered */
+  .explanation-box {
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: 8px;
+    background: rgba(127, 90, 240, 0.1);
+    font-size: 0.95rem;
+    color: #c4b5fd;
+    border-left: 3px solid #7f5af0;
+    display: none; /* Hidden by default */
+    animation: fadeIn 0.4s ease;
+  }
+  
+  .explanation-box.visible {
+    display: block;
+  }
+
+  /* Scoreboard Badge */
+  .scoreboard {
+    background: #7f5af0;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-left: auto;
+    box-shadow: 0 4px 12px rgba(127, 90, 240, 0.4);
   }
 
   @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
 </style>
 </head>
 
@@ -102,20 +177,26 @@
 
 <main class="content-with-sidebar">
   <div class="page-wrapper container">
-    <h1 class="h-gradient">MCQ Generator</h1>
-    <p class="center mt-8">Turn a topic or text into practice MCQs — choose number of questions.</p>
+    <h1 class="h-gradient">MCQ Quiz Mode</h1>
+    <p class="center mt-8">Generate a quiz, test your knowledge, and track your score.</p>
 
     <div class="card mt-18">
-      <textarea id="mcq-text" rows="6" placeholder="Enter topic or paste text..."></textarea>
+      <textarea id="mcq-text" rows="5" placeholder="Paste study material, article, or topic here to generate a quiz..."></textarea>
 
-      <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
-        <input id="mcq-count" type="number" min="1" max="30" value="5"
-          style="width:96px;padding:8px;border-radius:10px;background:transparent;
-                 border:1px solid rgba(255,255,255,0.06)">
-        <button id="mcq-submit" class="btn-primary">Generate MCQs</button>
+      <div style="display:flex; gap:12px; align-items:center; margin-top:16px; flex-wrap:wrap;">
+        
+        <div style="display:flex; align-items:center; background:rgba(255,255,255,0.05); padding:4px 12px; border-radius:10px;">
+            <label for="mcq-count" style="font-size:0.9rem; margin-right:8px; color:rgba(255,255,255,0.7);">Questions:</label>
+            <input id="mcq-count" type="number" min="1" max="20" value="5"
+              style="width:50px; border:none; background:transparent; color:white; font-weight:bold; text-align:center; outline:none;">
+        </div>
+
+        <button id="mcq-submit" class="btn-primary">Start Quiz</button>
         <span id="mcq-loader" class="loader hidden"></span>
-        <div style="flex:1"></div>
-        <small style="opacity:0.7">Tip: short focused text gives better MCQs.</small>
+        
+        <div id="score-display" class="scoreboard hidden">
+            Score: <span id="current-score">0</span> / <span id="total-qs">0</span>
+        </div>
       </div>
     </div>
 
@@ -128,81 +209,78 @@
 <script>
 (() => {
 
-  const API = window.API_BASE || "";
+  const API = window.API_BASE || "http://localhost:8000"; 
   const btn = document.getElementById("mcq-submit");
   const loader = document.getElementById("mcq-loader");
   const out = document.getElementById("mcq-result");
   const textEl = document.getElementById("mcq-text");
   const countEl = document.getElementById("mcq-count");
+  const scoreDisplay = document.getElementById("score-display");
+  const currentScoreEl = document.getElementById("current-score");
+  const totalQsEl = document.getElementById("total-qs");
   const tokenKey = "ai_study_token";
 
+  let score = 0;
+
+  // HTML Escape Helper
   const esc = t => String(t || "").replace(/[&<>"']/g, m => ({
     "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
   }[m]));
 
   // --------------------------
-  // PARSE BACKEND STRING → STRUCTURED MCQS
+  // GAME LOGIC: Handle Answer Click
   // --------------------------
-  // --------------------------
-  // PARSE BACKEND STRING → STRUCTURED MCQS
-  // --------------------------
-  function parseMCQString(str) {
+  window.checkAnswer = (element, isCorrect, cardId) => {
+      const card = document.getElementById(cardId);
+      if (card.classList.contains("answered")) return; // Prevent multiple clicks
 
-      // FIX 1: Remove Markdown bolding (**) to clean up the text
-      str = str.replace(/\*\*/g, ""); 
-      
-      str = str.replace("Here are 5 MCQs based on the given text:", "").trim();
+      // Mark card as answered (locks it)
+      card.classList.add("answered");
 
-      // split MCQs
-      const blocks = str.split(/MCQ\s+\d+/).filter(b => b.trim() !== "");
+      // Show Explanation
+      const explBox = card.querySelector(".explanation-box");
+      if (explBox) explBox.classList.add("visible");
 
-      const mcqs = [];
+      if (isCorrect) {
+          // Correct Answer Logic
+          element.classList.add("selected-correct");
+          score++;
+          currentScoreEl.innerText = score;
+          // Optional: Add a checkmark icon inside the div
+          element.innerHTML += ' <span style="margin-left:auto;">✅</span>';
+      } else {
+          // Wrong Answer Logic
+          element.classList.add("selected-wrong");
+          element.innerHTML += ' <span style="margin-left:auto;">❌</span>';
 
-      blocks.forEach(block => {
-          const lines = block.trim().split("\n").map(l => l.trim()).filter(l => l);
-
-          // FIX 2: Ensure we don't pick up stray symbols as the question
-          let question = lines[0];
-          let options = [];
-          let answer = "";
-
-          lines.forEach(line => {
-              // FIX 3: Robust check for options (A) or A.)
-              if (/^[A-D][\)\.]/.test(line)) {
-                  // Remove "A) " or "A. " from the start
-                  options.push(line.replace(/^[A-D][\)\.]\s*/, "").trim());
-              }
-              
-              // FIX 4: Use 'includes' instead of 'startsWith' to be safer
-              if (line.toLowerCase().includes("correct answer")) {
-                  let parts = line.split(":");
-                  if(parts[1]) {
-                      answer = parts[1].trim();
-                      // Remove option prefix (e.g., "B) ") from answer to match option text
-                      answer = answer.replace(/^[A-D][\)\.]\s*/, "").trim();
-                  }
+          // Highlight the REAL correct answer
+          const options = card.querySelectorAll(".mcq-option");
+          options.forEach(opt => {
+              if (opt.dataset.isCorrect === "true") {
+                  opt.classList.add("reveal-correct");
+                  opt.innerHTML += ' <span style="margin-left:auto; font-size:0.8em; opacity:0.8;">(Correct)</span>';
               }
           });
-
-          if (question) {
-              mcqs.push({ question, options, answer });
-          }
-      });
-
-      return mcqs;
-  }
+      }
+  };
 
   // --------------------------
   // GENERATE MCQS
   // --------------------------
-  btn.addEventListener("click", async ()=>{
+  btn.addEventListener("click", async () => {
 
     out.innerHTML = "";
+    scoreDisplay.classList.add("hidden");
+    score = 0; // Reset Score
+    currentScoreEl.innerText = "0";
+
     const text = textEl.value.trim();
-    const count = Number(countEl.value);
+    let count = parseInt(countEl.value);
+    if (isNaN(count) || count < 1) count = 5;
+    if (count > 20) count = 20;
 
     if (!text) {
-      out.innerHTML = "<p style='color:#ff4d6d'>Enter topic or text.</p>";
+      out.innerHTML = "<p style='color:#ff4d6d; margin-top:20px;'>Please enter text first.</p>";
       return;
     }
 
@@ -217,27 +295,53 @@
       const resp = await fetch(API + "/make-mcq", {
         method: "POST",
         headers,
-        body: JSON.stringify({ text, count })
+        body: JSON.stringify({ text, num_questions: count })
       });
 
       const data = await resp.json();
-      const list = parseMCQString(data.mcqs);
+      if (data.error) throw new Error(data.error);
 
+      const list = data.mcqs; 
+      if (!list || list.length === 0) {
+          out.innerHTML = "<p style='margin-top:20px;'>No MCQs generated.</p>";
+          return;
+      }
+
+      // Update Scoreboard Totals
+      totalQsEl.innerText = list.length;
+      scoreDisplay.classList.remove("hidden");
+
+      // Render HTML
       let html = "";
       list.forEach((q, i) => {
+        const cardId = `mcq-card-${i}`;
+        
         html += `
-          <div class="mcq-card">
-            <div class="mcq-question">MCQ ${i+1}: ${esc(q.question)}</div>
-
-            ${q.options.map((opt, idx) => `
-              <div class="mcq-option ${opt === q.answer ? "correct" : ""}">
-                ${String.fromCharCode(65 + idx)}) ${esc(opt)}
-              </div>
-            `).join("")}
-
-            <div style="margin-top:10px; opacity:0.7;">
-              <strong>Correct Answer:</strong> ${esc(q.answer)}
+          <div class="mcq-card" id="${cardId}">
+            <div class="mcq-question">
+                <span style="color:#7f5af0; margin-right:8px;">${i+1}.</span> ${esc(q.question)}
             </div>
+
+            <div style="display:flex; flex-direction:column;">
+                ${q.options.map((opt, idx) => {
+                    const isCorrect = opt === q.correctAnswer;
+                    
+                    return `
+                      <div class="mcq-option" 
+                           data-is-correct="${isCorrect}"
+                           onclick="checkAnswer(this, ${isCorrect}, '${cardId}')">
+                        <strong style="margin-right:12px; opacity:0.6;">${String.fromCharCode(65 + idx)}</strong> 
+                        ${esc(opt)}
+                      </div>
+                    `;
+                }).join("")}
+            </div>
+
+            ${q.explanation ? `
+                <div class="explanation-box">
+                  <strong>💡 Explanation:</strong> ${esc(q.explanation)}
+                </div>
+            ` : ''}
           </div>
         `;
       });
@@ -245,7 +349,8 @@
       out.innerHTML = html;
 
     } catch(err) {
-      out.innerHTML = "<p style='color:#ff4d6d'>Error: " + esc(err.message) + "</p>";
+      console.error(err);
+      out.innerHTML = "<p style='color:#ff4d6d; margin-top:20px;'>Error: " + esc(err.message) + "</p>";
     } finally {
       loader.classList.add("hidden");
       btn.disabled = false;

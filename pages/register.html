@@ -1,91 +1,60 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Register — AI Study</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="stylesheet" href="../styles.css">
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - AI Study</title>
+    
+    <link rel="stylesheet" href="../styles.css">
 
+    <script
+      async
+      crossorigin="anonymous"
+      data-clerk-publishable-key="pk_test_c3RlYWR5LXNocmV3LTgxLmNsZXJrLmFjY291bnRzLmRldiQ"
+      src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+      type="text/javascript"
+    ></script>
+
+    <style>
+        /* Simple styling to center the box and match your dark theme */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #1e1e1e; /* Dark background to match your app */
+            font-family: sans-serif;
+        }
+    </style>
+</head>
 <body>
 
-<!-- SIDEBAR -->
-<aside class="sidebar" id="sidebar">
-  <div class="brand">AI Study</div>
+    <div id="sign-up-container"></div>
 
-  <a href="../index.html">Home</a>
-  <a href="summarize.html">Summarize PDF</a>
-  <a href="make-notes.html">Make Notes</a>
-  <a href="mcq.html">Make MCQ</a>
-  <a href="explain.html">Explain</a>
-  <a href="qna.html">QnA</a>
-  <a href="notes.html">Notes History</a>
+    <script>
+      window.addEventListener("load", async function () {
+        await Clerk.load();
 
-  <div class="spacer"></div>
-
-  <a href="register.html" class="active">Register</a>
-  <a href="login.html">Login</a>
-</aside>
-
-
-<!-- PAGE CONTENT -->
-<main class="content-with-sidebar">
-
-  <div class="page-wrapper container">
-
-    <h1 class="h-gradient">Create Account</h1>
-    <p class="center mt-18">Sign up to save notes and access protected features.</p>
-
-    <div class="card mt-18">
-
-      <!-- FULL NAME -->
-      <label>Full name</label>
-      <input id="reg-name"
-             placeholder="Your full name"
-             style="width:100%;padding:12px;border-radius:10px;background:transparent;
-             border:1px solid rgba(255,255,255,0.08);color:#fff;margin-top:8px">
-
-      <!-- EMAIL -->
-      <label style="margin-top:12px">Email</label>
-      <input id="reg-email" type="email"
-             placeholder="Your email"
-             style="width:100%;padding:12px;border-radius:10px;background:transparent;
-             border:1px solid rgba(255,255,255,0.08);color:#fff;margin-top:8px">
-
-      <!-- MOBILE (Required by backend) -->
-      <label style="margin-top:12px">Mobile Number</label>
-      <input id="reg-mobile" type="tel"
-             placeholder="Your mobile number"
-             style="width:100%;padding:12px;border-radius:10px;background:transparent;
-             border:1px solid rgba(255,255,255,0.08);color:#fff;margin-top:8px">
-
-      <!-- PASSWORD -->
-      <label style="margin-top:12px">Password</label>
-      <input id="reg-password" type="password"
-             placeholder="Create a password"
-             style="width:100%;padding:12px;border-radius:10px;background:transparent;
-             border:1px solid rgba(255,255,255,0.08);color:#fff;margin-top:8px">
-
-      <!-- BUTTONS -->
-      <div style="margin-top:16px;display:flex;gap:12px">
-        <button id="reg-submit" class="btn-primary">Create Account</button>
-
-        <button onclick="location.href='login.html'"
-                class="btn-primary"
-                style="background:transparent;border:1px solid rgba(255,255,255,0.12)">
-          Login
-        </button>
-      </div>
-
-      <!-- OUTPUT -->
-      <div id="reg-result" style="margin-top:14px;color:#ff8080;font-weight:500"></div>
-
-    </div>
-  </div>
-
-</main>
-
-<script src="../app.js"></script>
+        if (Clerk.user) {
+          // If user is already logged in, go back to the homepage
+          window.location.href = "../index.html";
+        } else {
+          // Identify the div where the form should go
+          const signUpDiv = document.getElementById("sign-up-container");
+          
+          // Mount the Sign Up component
+          Clerk.mountSignUp(signUpDiv, {
+             afterSignUpUrl: "../index.html",
+             afterSignInUrl: "../index.html",
+             // This makes the box look good in Dark Mode
+             appearance: {
+                baseTheme: 'dark' 
+             }
+          });
+        }
+      });
+    </script>
 
 </body>
 </html>
