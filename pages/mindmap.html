@@ -1,129 +1,314 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
 <title>AI Mind Map — AI Study</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../styles.css">
 
 <style>
-  .page-wrapper { max-width: 1000px; margin: 36px auto; padding: 0 20px; }
+  /* =========================================
+     1. THEME VARIABLES (Matching Flashcards)
+     ========================================= */
+  :root {
+    --font-main: 'Inter', sans-serif;
+    --transition-speed: 0.3s;
+    
+    /* DARK MODE DEFAULTS */
+    --bg-body: #0f172a;
+    --bg-sidebar: #1e293b;
+    --bg-card: rgba(30, 41, 59, 0.7);
+    --border-color: rgba(255, 255, 255, 0.1);
+    
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    
+    /* Orange/Pink Gradient (Same as Flashcards) */
+    --accent-primary: #f97316; 
+    --accent-secondary: #db2777; 
+    --accent-gradient: linear-gradient(135deg, #f97316 0%, #db2777 100%);
+    
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --nav-hover: rgba(255, 255, 255, 0.05);
+  }
+
+  /* LIGHT MODE OVERRIDES */
+  [data-theme="light"] {
+    --bg-body: #f8fafc;
+    --bg-sidebar: #ffffff;
+    --bg-card: #ffffff;
+    --border-color: #e2e8f0;
+
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+
+    --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --nav-hover: #f1f5f9;
+  }
+
+  /* =========================================
+     2. GLOBAL RESET
+     ========================================= */
+  * { box-sizing: border-box; }
   
-  /* Input Card */
-  .card { 
-    padding:24px; 
-    border-radius:16px; 
-    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); 
-    box-shadow:0 10px 30px rgba(2,6,23,0.55); 
-    border: 1px solid rgba(255,255,255,0.05);
+  body {
+    margin: 0;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    font-family: var(--font-main);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
   }
 
-  textarea { 
-    width:100%; 
-    padding:16px; 
-    border-radius:12px; 
-    background:rgba(0,0,0,0.2); 
-    border:1px solid rgba(255,255,255,0.1); 
-    color:inherit; 
-    font-size: 1rem;
+  a { text-decoration: none; color: inherit; }
+
+  /* =========================================
+     3. SIDEBAR (Fixed Layout)
+     ========================================= */
+  .sidebar {
+    width: 260px;
+    height: 100vh;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+    position: fixed;
+    top: 0; left: 0;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+  }
+
+  .brand {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 30px;
+    padding-left: 12px;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .nav-links a {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+  }
+  
+  .nav-links a:hover {
+    background: var(--nav-hover);
+    color: var(--text-main);
+    transform: translateX(4px);
+  }
+
+  .nav-links a.active {
+    background: rgba(249, 115, 22, 0.1);
+    color: var(--accent-primary);
+    font-weight: 600;
+  }
+
+  .nav-icon { margin-right: 12px; font-size: 1.1rem; }
+  .spacer { flex: 1; }
+
+  /* =========================================
+     4. MAIN CONTENT
+     ========================================= */
+  .main-content {
+    margin-left: 260px;
+    padding: 40px 60px;
+    min-height: 100vh;
+    max-width: 1000px;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+  }
+  
+  .theme-toggle {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: 0.2s;
-    font-family: inherit;
-    resize: vertical;
   }
-  textarea:focus {
-    border-color: #7f5af0;
-    outline: none;
-    background:rgba(0,0,0,0.3);
+  .theme-toggle:hover { transform: scale(1.05); }
+
+  .page-header { text-align: center; margin-bottom: 40px; animation: fadeIn 0.5s ease; }
+  
+  .h-gradient {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
+    line-height: 1.2;
+  }
+  
+  .sub-text {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-top: 10px;
   }
 
-  /* Diagram Output Area */
-  .diagram-container {
-    margin-top: 30px;
-    background: #ffffff; /* White bg for diagram visibility */
-    padding: 30px;
+  /* =========================================
+     5. WHITE INPUT BOX
+     ========================================= */
+  .input-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 40px;
+  }
+
+  /* Force WHITE background and DARK text */
+  textarea {
+    width: 100%;
+    padding: 18px;
+    border-radius: 12px;
+    background-color: #ffffff !important; 
+    color: #1e293b !important;
+    border: 2px solid #e2e8f0;
+    font-size: 1.05rem;
+    font-family: var(--font-main);
+    resize: vertical;
+    transition: 0.2s;
+    min-height: 120px;
+    line-height: 1.6;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+  }
+
+  textarea:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.15);
+  }
+  
+  textarea::placeholder { color: #94a3b8; }
+
+  .btn-primary {
+    background: var(--accent-gradient);
+    color: #fff;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+    transition: transform 0.2s;
+  }
+  .btn-primary:active { transform: scale(0.96); }
+  .btn-primary:disabled { opacity: 0.7; cursor: wait; }
+
+  /* =========================================
+     6. DIAGRAM OUTPUT (Mermaid)
+     ========================================= */
+  .diagram-wrapper {
+    background: #ffffff; /* Always white for Mermaid readability */
     border-radius: 16px;
+    padding: 30px;
     min-height: 300px;
     display: flex;
     justify-content: center;
     align-items: center;
     overflow-x: auto;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-    animation: slideUp 0.5s ease-out;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    margin-top: 40px;
+    border: 1px solid var(--border-color);
+    animation: slideUp 0.6s ease;
   }
-  
-  /* Buttons */
-  .btn-primary { 
-    padding:12px 24px; 
-    border-radius:12px; 
-    border:none; 
-    background:linear-gradient(90deg,#7f5af0,#5eead4); 
-    color:#021; 
-    font-weight:700; 
-    cursor:pointer;
-    transition: transform 0.1s;
-  }
-  .btn-primary:active { transform: scale(0.96); }
-  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
-  /* Loader */
-  .loader { 
-    width:24px; height:24px; border-radius:50%; 
-    border:3px solid rgba(255,255,255,0.1); 
-    border-top-color:#5eead4; 
-    animation:spin 900ms linear infinite; 
-  }
+  .loader { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.3); border-top-color: var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-left: 10px; }
   .hidden { display: none; }
-  @keyframes spin { to{transform:rotate(360deg)} }
-  @keyframes slideUp { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:translateY(0)} }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    .sidebar { width: 70px; padding: 20px 10px; }
+    .nav-links a span:last-child { display: none; }
+    .nav-icon { margin: 0; font-size: 1.5rem; width: 100%; text-align: center; }
+    .main-content { margin-left: 70px; padding: 20px; }
+    .brand { display: none; }
+  }
+
 </style>
 </head>
-
 <body>
 
-<aside class="sidebar" id="sidebar">
+ <aside class="sidebar">
   <div class="brand">AI Study</div>
-  <a href="../index.html">Home</a>
-  <a href="flashcards.html">Flashcards</a>
-  <a href="summarize.html">Summarize PDF</a>
-  <a href="make-notes.html">Make Notes</a>
-  <a href="mcq.html">Make MCQ</a>
-  <a href="explain.html">Explain</a>
-  <a href="mindmap.html" class="active">Mind Map</a>
-  <a href="qna.html">QnA</a>
-  <a href="notes.html">Notes History</a>
-  <div class="spacer"></div>
-  <a href="profile.html">Update Profile</a>
-  <a href="delete-account.html">Delete Account</a>
+  <nav class="nav-links">
+    <a href="../index.html"><span class="nav-icon">🏠</span><span>Home</span></a>
+    <a href="flashcards.html"><span class="nav-icon">⚡</span><span>Flashcards</span></a>
+    <a href="mindmap.html" class="active"><span class="nav-icon">🧠</span><span>Mind Map</span></a>
+    <a href="summarize.html"><span class="nav-icon">📝</span><span>Summarize PDF</span></a>
+    <a href="make-notes.html"><span class="nav-icon">✍️</span><span>Make Notes</span></a>
+    <a href="mcq.html"><span class="nav-icon">❓</span><span>Make MCQ</span></a>
+    <a href="explain.html"><span class="nav-icon">💡</span><span>Explain</span></a>
+    <a href="qna.html"><span class="nav-icon">💬</span><span>QnA</span></a>
+    <a href="notes.html"><span class="nav-icon">🕰️</span><span>History</span></a>
+    <div class="spacer"></div>
+    <a href="profile.html"><span class="nav-icon">⚙️</span><span>Settings</span></a>
+  </nav>
 </aside>
 
-<main class="content-with-sidebar">
-  <div class="page-wrapper">
-    <h1 class="h-gradient">AI Mind Maps</h1>
-    <p class="center mt-8">Visualize complex topics with intelligent flowcharts.</p>
-
-    <div class="card mt-18">
-      <textarea id="mm-text" rows="5" placeholder="Enter a topic or paste text to visualize (e.g., 'Process of Digestion')..."></textarea>
-      
-      <div style="display:flex; gap:16px; margin-top:20px; align-items:center;">
-        <button id="mm-btn" class="btn-primary">Generate Diagram</button>
-        <span id="loader" class="loader hidden"></span>
-      </div>
-    </div>
-
-    <div id="error-msg" style="color:#ff4d6d; text-align:center; margin-top:20px;"></div>
-
-    <div id="diagram-wrapper" class="hidden">
-       <div class="diagram-container">
-          <div class="mermaid" id="mermaid-output"></div>
-       </div>
-       <div style="text-align:center; margin-top:10px; opacity:0.7; font-size:0.9rem;">
-          💡 Tip: You can take a screenshot of the diagram to save it.
-       </div>
-    </div>
-
+<main class="main-content">
+  
+  <div class="top-bar">
+    <button id="theme-btn" class="theme-toggle" title="Toggle Theme">
+      <span id="theme-icon">🌙</span>
+    </button>
   </div>
+
+  <div class="page-header">
+    <h1 class="h-gradient">AI Mind Map</h1>
+    <p class="sub-text">Visualize complex ideas. Enter a topic or text to generate a hierarchical map.</p>
+  </div>
+
+  <div class="input-card">
+    <textarea id="mm-text" placeholder="Enter a topic (e.g. 'Photosynthesis') or paste text to visualize..."></textarea>
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+        <div id="error-msg" style="color:#ef4444; font-size:0.9rem;"></div>
+        <div style="display:flex; align-items:center;">
+            <span id="loader" class="loader hidden"></span>
+            <button id="mm-btn" class="btn-primary" style="margin-left:10px;">Generate Diagram</button>
+        </div>
+    </div>
+  </div>
+
+  <div id="diagram-wrapper" class="hidden">
+    <div class="diagram-wrapper">
+       <div class="mermaid" id="mermaid-output"></div>
+    </div>
+    <div style="text-align:center; margin-top:12px; opacity:0.6; font-size:0.85rem;">
+       💡 Tip: You can take a screenshot of the diagram to save it.
+    </div>
+  </div>
+
 </main>
 
 <script src="../config.js"></script>
@@ -131,8 +316,31 @@
 <script type="module">
   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
   
+  // Initialize Mermaid
   mermaid.initialize({ startOnLoad: false, theme: 'default' });
 
+  // --- 1. THEME LOGIC ---
+  const themeBtn = document.getElementById('theme-btn');
+  const themeIcon = document.getElementById('theme-icon');
+  const htmlEl = document.documentElement;
+
+  const savedTheme = localStorage.getItem('ai_study_theme') || 'dark';
+  htmlEl.setAttribute('data-theme', savedTheme);
+  updateIcon(savedTheme);
+
+  themeBtn.addEventListener('click', () => {
+    const current = htmlEl.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    htmlEl.setAttribute('data-theme', next);
+    localStorage.setItem('ai_study_theme', next);
+    updateIcon(next);
+  });
+
+  function updateIcon(theme) {
+    themeIcon.innerText = theme === 'dark' ? '🌙' : '☀️';
+  }
+
+  // --- 2. MIND MAP LOGIC ---
   const btn = document.getElementById("mm-btn");
   const textEl = document.getElementById("mm-text");
   const loader = document.getElementById("loader");
@@ -160,7 +368,7 @@
       const token = localStorage.getItem(tokenKey);
       if(token) headers["Authorization"] = "Bearer " + token;
 
-      // 👇 FIXED: Added /api/study prefix
+      // Call API
       const resp = await fetch(`${API}/api/study/make-mindmap`, {
         method: "POST",
         headers,
@@ -171,16 +379,17 @@
       
       if(data.error) throw new Error(data.error);
 
-      // Render Logic
+      // Extract Mermaid Code
       const code = data.mermaid_code;
       if (!code) throw new Error("No diagram code generated.");
 
-      output.removeAttribute("data-processed"); // Reset mermaid state
-      output.innerHTML = code; // Insert raw text
+      // Reset mermaid container
+      output.removeAttribute("data-processed"); 
+      output.innerHTML = code; 
       
       wrapper.classList.remove("hidden");
       
-      // Render the diagram
+      // Render Diagram
       await mermaid.run({
         nodes: [output]
       });

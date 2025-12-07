@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <title>Delete Account — AI Study</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../styles.css">
 
 <script
@@ -15,146 +16,365 @@
 ></script>
 
 <style>
-  .page-wrapper { max-width: 600px; margin: 60px auto; padding: 0 20px; }
+  /* =========================================
+     1. THEME VARIABLES
+     ========================================= */
+  :root {
+    --font-main: 'Inter', sans-serif;
+    --transition-speed: 0.3s;
+    
+    /* DARK MODE DEFAULTS */
+    --bg-body: #0f172a;      
+    --bg-sidebar: #1e293b;   
+    --bg-card: rgba(30, 41, 59, 0.7);
+    --border-color: rgba(255, 255, 255, 0.1);
+    
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    
+    /* ORANGE & PINK BRANDING */
+    --accent-primary: #f97316;
+    --accent-gradient: linear-gradient(135deg, #f97316 0%, #db2777 100%);
+    
+    /* DANGER COLORS */
+    --danger-red: #ef4444;
+    --danger-bg: rgba(239, 68, 68, 0.1);
+    
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --nav-hover: rgba(255, 255, 255, 0.05);
+  }
+
+  /* LIGHT MODE OVERRIDES */
+  [data-theme="light"] {
+    --bg-body: #f8fafc;
+    --bg-sidebar: #ffffff;
+    --bg-card: #ffffff;
+    --border-color: #e2e8f0;
+
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+
+    --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --nav-hover: #f1f5f9;
+  }
+
+  /* =========================================
+     2. GLOBAL RESET
+     ========================================= */
+  * { box-sizing: border-box; }
   
-  /* Danger Card */
-  .card { 
-    padding:30px; 
-    border-radius:16px; 
-    background: linear-gradient(180deg, rgba(255, 91, 110, 0.05), rgba(255, 0, 0, 0.02)); 
-    box-shadow:0 10px 30px rgba(0,0,0,0.4); 
-    border: 1px solid rgba(255, 91, 110, 0.2);
-    text-align: center;
+  body {
+    margin: 0;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    font-family: var(--font-main);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
   }
 
-  input[type="text"] { 
-    width:100%; 
-    padding:14px; 
-    border-radius:12px; 
-    background:rgba(0,0,0,0.3); 
-    border:1px solid rgba(255,255,255,0.1); 
-    color:#fff; 
-    font-size: 1rem;
-    transition: 0.2s;
-    text-align: center;
-    letter-spacing: 1px;
-  }
-  input[type="text"]:focus {
-    border-color: #ff5b6e;
-    outline: none;
-    background:rgba(0,0,0,0.4);
+  a { text-decoration: none; color: inherit; }
+
+  /* =========================================
+     3. SIDEBAR
+     ========================================= */
+  .sidebar {
+    width: 260px;
+    height: 100vh;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+    position: fixed;
+    top: 0; left: 0;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
   }
 
-  /* Danger Button */
-  .btn-danger { 
+  .brand {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 30px;
+    padding-left: 12px;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .nav-links a {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+  }
+  
+  .nav-links a:hover {
+    background: var(--nav-hover);
+    color: var(--text-main);
+    transform: translateX(4px);
+  }
+
+  /* Active state for Delete Account (Red) */
+  .nav-links a.active-danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger-red);
+    font-weight: 600;
+  }
+
+  .nav-icon { margin-right: 12px; font-size: 1.1rem; }
+  .spacer { flex: 1; }
+
+  /* =========================================
+     4. MAIN CONTENT
+     ========================================= */
+  .main-content {
+    margin-left: 260px;
+    padding: 40px 60px;
+    min-height: 100vh;
+    max-width: 1000px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .top-bar {
     width: 100%;
-    padding:14px 20px; 
-    border-radius:12px; 
-    border:none; 
-    background: #ff5b6e; 
-    color: white; 
-    font-weight:700; 
-    cursor:pointer;
-    transition: 0.2s;
-    opacity: 0.5;
-    pointer-events: none; /* Disabled by default */
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 40px;
   }
   
-  /* Active state when "DELETE" is typed */
-  .btn-danger.active {
-    opacity: 1;
-    pointer-events: all;
-    box-shadow: 0 0 15px rgba(255, 91, 110, 0.4);
+  .theme-toggle {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
   }
-  .btn-danger.active:hover { background: #ff3b52; }
+  .theme-toggle:hover { transform: scale(1.05); }
+
+  /* =========================================
+     5. DANGER CARD
+     ========================================= */
+  .danger-card {
+    max-width: 600px;
+    width: 100%;
+    background: var(--danger-bg);
+    border: 1px solid var(--danger-red);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 10px 40px -10px rgba(239, 68, 68, 0.2);
+    animation: fadeIn 0.5s ease-out;
+  }
 
   .warning-icon {
-    font-size: 3rem;
-    margin-bottom: 16px;
+    font-size: 4rem;
+    margin-bottom: 20px;
     display: block;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
   }
 
-  .loader { width:20px; height:20px; border-radius:50%; border:3px solid rgba(255,255,255,0.2); border-top-color:#fff; animation:spin 1s linear infinite; display:inline-block; vertical-align: middle; margin-left: 10px;}
-  @keyframes spin { to{transform:rotate(360deg);} }
+  .danger-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--danger-red);
+    margin-bottom: 16px;
+  }
+
+  .danger-text {
+    font-size: 1.1rem;
+    color: var(--text-main);
+    line-height: 1.6;
+    margin-bottom: 30px;
+    opacity: 0.9;
+  }
+
+  /* White Input Box */
+  input[type="text"] {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    background-color: #ffffff !important; 
+    color: #ef4444 !important; /* Red text for danger */
+    border: 2px solid #e2e8f0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 2px;
+    transition: 0.2s;
+    margin-bottom: 24px;
+  }
+
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--danger-red);
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2);
+  }
+  input[type="text"]::placeholder { color: #94a3b8; font-weight: 400; letter-spacing: 0;}
+
+  /* Danger Button */
+  .btn-danger {
+    background: var(--danger-red);
+    color: #fff;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: not-allowed;
+    width: 100%;
+    opacity: 0.5;
+    transition: 0.2s;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+  }
+  
+  .btn-danger.active {
+    cursor: pointer;
+    opacity: 1;
+  }
+  .btn-danger.active:hover { transform: translateY(-2px); }
+
+  .cancel-link {
+    margin-top: 24px;
+    display: inline-block;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+  .cancel-link:hover { color: var(--text-main); text-decoration: underline; }
+
+  .loader { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-left: 10px; }
   .hidden { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    .sidebar { width: 70px; padding: 20px 10px; }
+    .nav-links a span { display: none; }
+    .nav-icon { margin: 0; font-size: 1.5rem; width: 100%; text-align: center; }
+    .main-content { margin-left: 70px; padding: 20px; }
+    .brand { display: none; }
+  }
 
 </style>
 </head>
 <body>
 
-<aside class="sidebar" id="sidebar">
+<aside class="sidebar">
   <div class="brand">AI Study</div>
-  <a href="../index.html">Home</a>
-  <a href="flashcards.html">Flashcards</a>
-  <a href="summarize.html">Summarize PDF</a>
-  <a href="make-notes.html">Make Notes</a>
-  <a href="mcq.html">Make MCQ</a>
-  <a href="explain.html">Explain</a>
-  <a href="mindmap.html">Mind Map</a>
-  <a href="qna.html">QnA</a>
-  <a href="notes.html">Notes History</a>
-  <div class="spacer"></div>
-  <a href="profile.html">Update Profile</a>
-  <a href="delete-account.html" class="active">Delete Account</a>
+  <nav class="nav-links">
+    <a href="../index.html"><span class="nav-icon">🏠</span><span>Home</span></a>
+    <a href="flashcards.html"><span class="nav-icon">⚡</span><span>Flashcards</span></a>
+    <a href="mindmap.html"><span class="nav-icon">🧠</span><span>Mind Map</span></a>
+    <a href="summarize.html"><span class="nav-icon">📝</span><span>Summarize PDF</span></a>
+    <a href="make-notes.html"><span class="nav-icon">✍️</span><span>Make Notes</span></a>
+    <a href="mcq.html"><span class="nav-icon">❓</span><span>Make MCQ</span></a>
+    <a href="explain.html"><span class="nav-icon">💡</span><span>Explain</span></a>
+    <a href="qna.html"><span class="nav-icon">💬</span><span>QnA</span></a>
+    <a href="notes.html"><span class="nav-icon">🕰️</span><span>History</span></a>
+    <div class="spacer"></div>
+    <a href="profile.html"><span class="nav-icon">⚙️</span><span>Settings</span></a>
+    <a href="delete-account.html" class="active-danger"><span class="nav-icon">⚠️</span><span>Delete Account</span></a>
+  </nav>
 </aside>
 
-<main class="content-with-sidebar">
-  <div class="page-wrapper container">
-    
-    <div class="card">
-      <div class="warning-icon">⚠️</div>
-      <h2 style="color:#ff5b6e; margin-bottom:10px;">Delete Account</h2>
-      <p style="color:rgba(255,255,255,0.7); line-height:1.5; margin-bottom:24px;">
-        This action is <strong>permanent</strong>. All your notes, summaries, history, and account data will be wiped immediately.
-      </p>
-
-      <div style="margin-bottom: 20px;">
-        <label style="display:block; margin-bottom:8px; font-size:0.9rem; color:rgba(255,255,255,0.5);">Type <strong>DELETE</strong> to confirm</label>
-        <input id="delete-input" type="text" placeholder="DELETE">
-      </div>
-
-      <button id="delete-submit" class="btn-danger">
-        Permanently Delete Account
-      </button>
-      <span id="loader" class="loader hidden"></span>
-
-      <div id="error-msg" style="color:#ff5b6e; margin-top:16px; font-size:0.9rem;"></div>
-    </div>
-
-    <div style="text-align:center; margin-top:20px;">
-        <a href="profile.html" style="color:rgba(255,255,255,0.5); text-decoration:none; font-size:0.9rem;">Cancel, keep my account</a>
-    </div>
-
+<main class="main-content">
+  
+  <div class="top-bar">
+    <button id="theme-btn" class="theme-toggle" title="Toggle Theme">
+      <span id="theme-icon">🌙</span>
+    </button>
   </div>
+
+  <div class="danger-card">
+    <div class="warning-icon">⚠️</div>
+    <h1 class="danger-title">Delete Account</h1>
+    <p class="danger-text">
+      This action is <strong>permanent</strong>. All your notes, summaries, history, and account data will be wiped immediately and cannot be recovered.
+    </p>
+
+    <div style="margin-bottom: 20px;">
+        <label style="display:block; margin-bottom:10px; font-size:0.9rem; color:var(--text-muted);">Type <strong>DELETE</strong> to confirm</label>
+        <input id="delete-input" type="text" placeholder="DELETE">
+    </div>
+
+    <button id="delete-submit" class="btn-danger">
+        Permanently Delete Account
+    </button>
+    <span id="loader" class="loader hidden"></span>
+
+    <div id="error-msg" style="color:#ef4444; margin-top:16px; font-size:0.9rem;"></div>
+    
+    <div>
+        <a href="profile.html" class="cancel-link">Cancel, keep my account</a>
+    </div>
+  </div>
+
 </main>
 
 <script>
+  // --- 1. THEME LOGIC ---
+  const themeBtn = document.getElementById('theme-btn');
+  const themeIcon = document.getElementById('theme-icon');
+  const htmlEl = document.documentElement;
+
+  const savedTheme = localStorage.getItem('ai_study_theme') || 'dark';
+  htmlEl.setAttribute('data-theme', savedTheme);
+  updateIcon(savedTheme);
+
+  themeBtn.addEventListener('click', () => {
+    const current = htmlEl.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    htmlEl.setAttribute('data-theme', next);
+    localStorage.setItem('ai_study_theme', next);
+    updateIcon(next);
+  });
+
+  function updateIcon(theme) {
+    themeIcon.innerText = theme === 'dark' ? '🌙' : '☀️';
+  }
+
+  // --- 2. DELETE LOGIC ---
   const publishableKey = "pk_test_c3RlYWR5LXNocmV3LTgxLmNsZXJrLmFjY291bnRzLmRldiQ"; 
   const input = document.getElementById("delete-input");
   const btn = document.getElementById("delete-submit");
   const loader = document.getElementById("loader");
   const errDiv = document.getElementById("error-msg");
 
-  // 1. Logic to enable button ONLY when "DELETE" is typed
   input.addEventListener("input", (e) => {
-     if(e.target.value === "DELETE") {
-         btn.classList.add("active");
-     } else {
-         btn.classList.remove("active");
-     }
+      if(e.target.value === "DELETE") {
+          btn.classList.add("active");
+          btn.disabled = false;
+      } else {
+          btn.classList.remove("active");
+          btn.disabled = true;
+      }
   });
 
-  // 2. Handle Deletion
   btn.addEventListener("click", async () => {
-     if(input.value !== "DELETE") return;
+      if(input.value !== "DELETE") return;
 
-     btn.innerText = "Deleting...";
-     btn.classList.remove("active"); // Disable click
-     loader.classList.remove("hidden");
-     errDiv.innerText = "";
+      btn.innerText = "Deleting...";
+      btn.disabled = true;
+      loader.classList.remove("hidden");
+      errDiv.innerText = "";
 
-     try {
-        // Load Clerk
+      try {
         await Clerk.load({ publishableKey });
         
         if (!Clerk.user) {
@@ -162,19 +382,16 @@
             return;
         }
 
-        // Perform Deletion
         await Clerk.user.delete();
-
-        // Redirect to Home/Login on success
         window.location.href = "../index.html";
 
-     } catch (err) {
+      } catch (err) {
         console.error(err);
         errDiv.innerText = "Error: " + (err.message || "Could not delete account.");
         btn.innerText = "Permanently Delete Account";
-        btn.classList.add("active");
+        btn.disabled = false;
         loader.classList.add("hidden");
-     }
+      }
   });
 </script>
 

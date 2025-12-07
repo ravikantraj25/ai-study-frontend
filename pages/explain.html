@@ -1,194 +1,401 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <title>Explain Topic — AI Study</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../styles.css">
+
 <style>
-  .page-wrapper { max-width:920px; margin:36px auto; }
-  
-  /* Main Input Card */
-  .card { 
-    padding:24px; 
-    border-radius:16px; 
-    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); 
-    box-shadow:0 10px 30px rgba(2,6,23,0.55); 
-    border: 1px solid rgba(255,255,255,0.05);
+  /* =========================================
+     1. THEME VARIABLES (Orange/Pink Match)
+     ========================================= */
+  :root {
+    --font-main: 'Inter', sans-serif;
+    --transition-speed: 0.3s;
+    
+    /* DARK MODE DEFAULTS */
+    --bg-body: #0f172a;      
+    --bg-sidebar: #1e293b;   
+    --bg-card: rgba(30, 41, 59, 0.7);
+    --border-color: rgba(255, 255, 255, 0.1);
+    
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    
+    /* ORANGE & PINK GRADIENT */
+    --accent-primary: #f97316; /* Orange */
+    --accent-secondary: #db2777; /* Pink */
+    --accent-gradient: linear-gradient(135deg, #f97316 0%, #db2777 100%);
+    
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --nav-hover: rgba(255, 255, 255, 0.05);
   }
 
-  input[type="text"] { 
-    width:100%; 
-    padding:14px; 
-    border-radius:12px; 
-    background:rgba(0,0,0,0.2); 
-    border:1px solid rgba(255,255,255,0.1); 
-    color:inherit; 
-    font-size: 1rem;
+  /* LIGHT MODE OVERRIDES */
+  [data-theme="light"] {
+    --bg-body: #f8fafc;
+    --bg-sidebar: #ffffff;
+    --bg-card: #ffffff;
+    --border-color: #e2e8f0;
+
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+
+    --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --nav-hover: #f1f5f9;
+  }
+
+  /* =========================================
+     2. GLOBAL RESET
+     ========================================= */
+  * { box-sizing: border-box; }
+  
+  body {
+    margin: 0;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    font-family: var(--font-main);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+  }
+
+  a { text-decoration: none; color: inherit; }
+
+  /* =========================================
+     3. SIDEBAR (Fixed Layout)
+     ========================================= */
+  .sidebar {
+    width: 260px;
+    height: 100vh;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+    position: fixed;
+    top: 0; left: 0;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+  }
+
+  .brand {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 30px;
+    padding-left: 12px;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .nav-links a {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+  }
+  
+  .nav-links a:hover {
+    background: var(--nav-hover);
+    color: var(--text-main);
+    transform: translateX(4px);
+  }
+
+  .nav-links a.active {
+    background: rgba(249, 115, 22, 0.1);
+    color: var(--accent-primary);
+    font-weight: 600;
+  }
+
+  .nav-icon { margin-right: 12px; font-size: 1.1rem; }
+  .spacer { flex: 1; }
+
+  /* =========================================
+     4. MAIN CONTENT
+     ========================================= */
+  .main-content {
+    margin-left: 260px;
+    padding: 40px 60px;
+    min-height: 100vh;
+    max-width: 1000px;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+  }
+  
+  .theme-toggle {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: 0.2s;
   }
-  input[type="text"]:focus {
-    border-color: #7f5af0;
-    outline: none;
-    background:rgba(0,0,0,0.3);
+  .theme-toggle:hover { transform: scale(1.05); }
+
+  .page-header { text-align: center; margin-bottom: 40px; animation: fadeIn 0.5s ease; }
+  
+  .h-gradient {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
+    line-height: 1.2;
+  }
+  
+  .sub-text {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-top: 10px;
   }
 
-  .btn-primary { 
-    padding:12px 20px; 
-    border-radius:12px; 
-    border:none; 
-    background:linear-gradient(90deg,#7f5af0,#5eead4); 
-    color:#021; 
-    font-weight:700; 
-    cursor:pointer;
-    transition: transform 0.1s;
+  /* =========================================
+     5. WHITE INPUT CARD
+     ========================================= */
+  .input-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 40px;
+  }
+
+  /* FORCED WHITE INPUT */
+  input[type="text"] {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    background-color: #ffffff !important; 
+    color: #1e293b !important;
+    border: 2px solid #e2e8f0;
+    font-size: 1.05rem;
+    font-family: var(--font-main);
+    transition: 0.2s;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+  }
+
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.15);
+  }
+  
+  input[type="text"]::placeholder { color: #94a3b8; }
+
+  .btn-primary {
+    background: var(--accent-gradient);
+    color: #fff;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+    transition: transform 0.2s;
+    white-space: nowrap;
   }
   .btn-primary:active { transform: scale(0.96); }
+  .btn-primary:disabled { opacity: 0.7; cursor: wait; }
 
-  .loader { 
-    width:20px; height:20px; border-radius:50%; 
-    border:3px solid rgba(255,255,255,0.1); 
-    border-top-color:#5eead4; 
-    animation:spin 900ms linear infinite; 
-    display:inline-block 
-  }
-  
-  .hidden { display:none }
-  @keyframes spin{ to{ transform:rotate(360deg) } }
-
-  /* ----------------------- */
-  /* NEW EXPLANATION STYLES */
-  /* ----------------------- */
+  /* =========================================
+     6. PROFESSIONAL EXPLANATION UI
+     ========================================= */
   
   .explain-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 30px;
     margin-bottom: 24px;
-    padding: 24px;
-    border-radius: 16px;
-    background: rgba(255,255,255,0.02); /* Subtle glass effect */
-    border: 1px solid rgba(255,255,255,0.04);
-    animation: fadeIn 0.4s ease-out;
+    box-shadow: var(--shadow-card);
+    animation: slideUp 0.5s ease-out;
   }
 
   .explain-title {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    margin-bottom: 12px;
-    background: linear-gradient(90deg, #fff, #a5b4fc);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+    color: var(--accent-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
   .explain-text {
-    font-size: 1.05rem;
-    line-height: 1.6;
-    color: rgba(255,255,255,0.9);
-    margin-bottom: 16px;
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--text-main);
+    margin-bottom: 20px;
+  }
+
+  /* Key Terms Chips */
+  .terms-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .term-chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(249, 115, 22, 0.1); 
+    border: 1px solid rgba(249, 115, 22, 0.3);
+    color: var(--accent-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
   }
 
   /* Bullet Points */
   .explain-list {
-    margin: 12px 0 20px 20px;
-    color: rgba(255,255,255,0.8);
+    margin: 10px 0 24px 20px;
+    color: var(--text-muted);
   }
-  .explain-list li { margin-bottom: 6px; }
+  .explain-list li { margin-bottom: 8px; line-height: 1.6; }
 
-  /* Example Box (Analogies) */
+  /* Analogy / Example Box */
   .example-box {
-    background: rgba(127, 90, 240, 0.1); /* Purple tint */
-    border-left: 4px solid #7f5af0;
-    padding: 16px;
+    background: rgba(219, 39, 119, 0.08); /* Pink tint */
+    border-left: 4px solid var(--accent-secondary);
+    padding: 20px;
     border-radius: 0 12px 12px 0;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+    position: relative;
   }
+  
   .example-header {
     font-size: 0.85rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #a5b4fc;
-    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: var(--accent-secondary);
+    font-weight: 800;
     margin-bottom: 8px;
+    display: block;
   }
-
-  /* Important Terms Chips */
-  .terms-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-  .term-chip {
-    padding: 6px 12px;
-    border-radius: 20px;
-    background: rgba(94, 234, 212, 0.1); /* Teal tint */
-    border: 1px solid rgba(94, 234, 212, 0.3);
-    color: #5eead4;
-    font-size: 0.85rem;
-    font-weight: 500;
-  }
-
-  /* FAQ Accordion Style */
+  
+  /* FAQ Style */
   .faq-container {
-    background: rgba(0,0,0,0.2);
-    border-radius: 12px;
-    padding: 16px;
+    background: var(--bg-body);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
   }
   .faq-item:not(:last-child) {
-    margin-bottom: 14px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
   }
-  .faq-q {
-    font-weight: 700;
-    color: #fff;
-    margin-bottom: 4px;
-  }
-  .faq-a {
-    color: rgba(255,255,255,0.7);
-    font-size: 0.95rem;
-  }
+  .faq-q { font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
+  .faq-a { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; }
 
-  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  .loader { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.3); border-top-color: var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
+  .hidden { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    .sidebar { width: 70px; padding: 20px 10px; }
+    .nav-links a span:last-child { display: none; }
+    .nav-icon { margin: 0; font-size: 1.5rem; width: 100%; text-align: center; }
+    .main-content { margin-left: 70px; padding: 20px; }
+    .brand { display: none; }
+  }
 
 </style>
 </head>
 <body>
 
-<aside class="sidebar" id="sidebar">
+  <aside class="sidebar">
   <div class="brand">AI Study</div>
-  <a href="../index.html">Home</a>
-  <a href="flashcards.html">Flashcards</a>
-  <a href="mindmap.html" class="active">Mind Map</a>
-  <a href="summarize.html">Summarize PDF</a>
-  <a href="make-notes.html">Make Notes</a>
-  <a href="mcq.html">Make MCQ</a>
-  <a href="explain.html" class="active">Explain</a>
-  <a href="qna.html">QnA</a>
-  <a href="notes.html">Notes History</a>
-  <div class="spacer"></div>
-  <a href="profile.html">Update Profile</a>
-  <a href="delete-account.html">Delete Account</a>
+  <nav class="nav-links">
+    <a href="../index.html"><span class="nav-icon">🏠</span><span>Home</span></a>
+    <a href="flashcards.html"><span class="nav-icon">⚡</span><span>Flashcards</span></a>
+    <a href="mindmap.html"><span class="nav-icon">🧠</span><span>Mind Map</span></a>
+    <a href="summarize.html"><span class="nav-icon">📝</span><span>Summarize PDF</span></a>
+    <a href="make-notes.html"><span class="nav-icon">✍️</span><span>Make Notes</span></a>
+    <a href="mcq.html"><span class="nav-icon">❓</span><span>Make MCQ</span></a>
+    <a href="explain.html" class="active"><span class="nav-icon">💡</span><span>Explain</span></a>
+    <a href="qna.html"><span class="nav-icon">💬</span><span>QnA</span></a>
+    <a href="notes.html"><span class="nav-icon">🕰️</span><span>History</span></a>
+    <div class="spacer"></div>
+    <a href="profile.html"><span class="nav-icon">⚙️</span><span>Settings</span></a>
+  </nav>
 </aside>
 
-<main class="content-with-sidebar">
-  <div class="page-wrapper container">
-    <h1 class="h-gradient">Explain Topic</h1>
-    <p class="center mt-8">Deep explanations with analogies, examples, and simple breakdowns.</p>
-
-    <div class="card mt-18">
-      <input id="explain-topic" type="text" placeholder="Enter topic (e.g. How does a Blockchain work?)" />
-      <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
-        <button id="explain-btn" class="btn-primary">Explain It</button>
-        <span id="explain-loader" class="loader hidden" aria-hidden="true"></span>
-      </div>
-    </div>
-
-    <div id="explain-result" style="margin-top: 30px;"></div>
+<main class="main-content">
+  
+  <div class="top-bar">
+    <button id="theme-btn" class="theme-toggle" title="Toggle Theme">
+      <span id="theme-icon">🌙</span>
+    </button>
   </div>
+
+  <div class="page-header">
+    <h1 class="h-gradient">Explain Topic</h1>
+    <p class="sub-text">Deep explanations with analogies, examples, and simple breakdowns.</p>
+  </div>
+
+  <div class="input-card">
+    <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+        <input id="explain-topic" type="text" placeholder="Enter topic (e.g. How does a Blockchain work?)" style="flex:1;">
+        <div style="display:flex; align-items:center;">
+            <span id="explain-loader" class="loader hidden" style="margin-right:12px;"></span>
+            <button id="explain-btn" class="btn-primary">Explain It</button>
+        </div>
+    </div>
+  </div>
+
+  <div id="explain-result" style="padding-bottom: 50px;"></div>
+
 </main>
 
 <script src="../config.js"></script>
 <script>
 (() => {
+  // --- 1. THEME LOGIC ---
+  const themeBtn = document.getElementById('theme-btn');
+  const themeIcon = document.getElementById('theme-icon');
+  const htmlEl = document.documentElement;
+
+  const savedTheme = localStorage.getItem('ai_study_theme') || 'dark';
+  htmlEl.setAttribute('data-theme', savedTheme);
+  updateIcon(savedTheme);
+
+  themeBtn.addEventListener('click', () => {
+    const current = htmlEl.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    htmlEl.setAttribute('data-theme', next);
+    localStorage.setItem('ai_study_theme', next);
+    updateIcon(next);
+  });
+
+  function updateIcon(theme) {
+    themeIcon.innerText = theme === 'dark' ? '🌙' : '☀️';
+  }
+
+  // --- 2. EXPLAIN LOGIC ---
   const API = window.API_BASE || "";
   const tokenKey = "ai_study_token";
   const topicEl = document.getElementById("explain-topic");
@@ -196,91 +403,70 @@
   const loader = document.getElementById("explain-loader");
   const out = document.getElementById("explain-result");
 
-  function show(l){ l.classList.remove("hidden"); }
-  function hide(l){ l.classList.add("hidden"); }
-  
-  // Safe HTML escaper
-  function esc(t){ 
-    return String(t||"").replace(/[&<>"']/g, m=>({ 
-      "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" 
-    }[m])); 
-  }
+  const esc = t => String(t||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
 
-  // ----------------------------------------------------
-  //  FORMATTER: Converts JSON blocks to Beautiful HTML
-  // ----------------------------------------------------
+  // --- HTML Formatter ---
   function explainFormatter(blocks){
     if(!Array.isArray(blocks)) {
-      // Fallback if not JSON array
-      return "<pre style='color:#fff'>"+esc(JSON.stringify(blocks,null,2))+"</pre>";
+      return `<div class="explain-section"><div class="explain-text">${esc(JSON.stringify(blocks,null,2))}</div></div>`;
     }
 
     let html = "";
-
     blocks.forEach(sec => {
       html += `<div class="explain-section">`;
 
-      // 1. Title
       if(sec.title) html += `<div class="explain-title">${esc(sec.title)}</div>`;
-
-      // 2. Main Paragraph
       if(sec.paragraph) html += `<div class="explain-text">${esc(sec.paragraph)}</div>`;
 
-      // 3. Important Terms (Chips)
-      if(sec.important_terms && sec.important_terms.length > 0) {
+      // Chips
+      if(sec.important_terms?.length) {
         html += `<div class="terms-container">`;
-        sec.important_terms.forEach(term => {
-           html += `<span class="term-chip">${esc(term)}</span>`;
-        });
+        sec.important_terms.forEach(term => html += `<span class="term-chip">${esc(term)}</span>`);
         html += `</div>`;
       }
 
-      // 4. Bullet Points
-      if(sec.bullets && sec.bullets.length > 0){
+      // Bullets
+      if(sec.bullets?.length){
         html += `<ul class="explain-list">`;
         sec.bullets.forEach(b => html += `<li>${esc(b)}</li>`);
         html += `</ul>`;
       }
 
-      // 5. Examples / Analogies (Highlighted Box)
-      if(sec.examples && sec.examples.length > 0){
+      // Analogies Box
+      if(sec.examples?.length){
         html += `<div class="example-box">`;
-        html += `<div class="example-header">Examples & Analogies</div>`;
-        html += `<ul style="padding-left:18px; margin:0;">`;
-        sec.examples.forEach(e => html += `<li style="margin-bottom:4px">${esc(e)}</li>`);
+        html += `<div class="example-header">✨ Examples & Analogies</div>`;
+        html += `<ul style="padding-left:18px; margin:0; color:var(--text-main);">`;
+        sec.examples.forEach(e => html += `<li style="margin-bottom:6px">${esc(e)}</li>`);
         html += `</ul></div>`;
       }
 
-      // 6. FAQs (Bottom Section)
-      if(sec.faqs && sec.faqs.length > 0){
+      // FAQs
+      if(sec.faqs?.length){
         html += `<div class="faq-container">`;
         sec.faqs.forEach(f => {
           html += `<div class="faq-item">
-                     <div class="faq-q">Q: ${esc(f.q)}</div>
+                     <div class="faq-q">❓ ${esc(f.q)}</div>
                      <div class="faq-a">${esc(f.a)}</div>
                    </div>`;
         });
         html += `</div>`;
       }
 
-      html += `</div>`; // End Section
+      html += `</div>`;
     });
-
     return html;
   }
 
-  // ----------------------------------------------------
-  //  FETCH LOGIC
-  // ----------------------------------------------------
   btn.addEventListener("click", async () => {
     out.innerHTML = "";
     const topic = (topicEl.value || "").trim();
     if(!topic){ 
-      out.innerHTML = "<p style='color:#ff4d6d; text-align:center'>Please enter a topic.</p>"; 
+      out.innerHTML = "<p style='color:#ef4444; text-align:center'>Please enter a topic.</p>"; 
       return; 
     }
 
-    show(loader); 
+    loader.classList.remove("hidden");
     btn.disabled = true;
 
     try {
@@ -288,8 +474,6 @@
       const token = localStorage.getItem(tokenKey);
       if(token) headers["Authorization"] = "Bearer " + token;
 
-      // 👇👇👇 FIX IS HERE 👇👇👇
-      // Was: "/explain" -> Now: "/api/study/explain"
       const resp = await fetch((API||"") + "/api/study/explain", { 
         method:"POST", 
         headers, 
@@ -297,16 +481,13 @@
       });
 
       const data = await resp.json();
-
-      // Check if backend returned "explanation" key or raw array
       let content = data.explanation || data; 
-
       out.innerHTML = explainFormatter(content);
 
     } catch (err) {
-      out.innerHTML = "<p style='color:#ff4d6d; text-align:center'>Error: " + esc(err.message||err) + "</p>";
+      out.innerHTML = "<p style='color:#ef4444; text-align:center'>Error: " + esc(err.message||err) + "</p>";
     } finally {
-      hide(loader); 
+      loader.classList.add("hidden");
       btn.disabled = false;
     }
   });

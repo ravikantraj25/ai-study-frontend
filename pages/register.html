@@ -3,38 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - AI Study</title>
-    <link rel="stylesheet" href="../styles.css">
+    <title>Create Account - AI Study</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script async crossorigin="anonymous" 
       data-clerk-publishable-key="pk_test_c3RlYWR5LXNocmV3LTgxLmNsZXJrLmFjY291bnRzLmRldiQ" 
       src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
 
     <style>
+        /* =========================================
+           1. THEME VARIABLES (Orange/Pink Match)
+           ========================================= */
+        :root {
+            --font-main: 'Inter', sans-serif;
+            --bg-body: #0f172a;      /* Slate 900 */
+            --text-main: #f8fafc;
+            --accent-gradient: linear-gradient(135deg, #f97316 0%, #db2777 100%);
+        }
+
+        /* =========================================
+           2. LAYOUT & STYLES
+           ========================================= */
         body {
             display: flex; 
+            flex-direction: column;
             justify-content: center; 
             align-items: center; 
             min-height: 100vh; 
             margin: 0;
-            background-color: #0f0e17;
-            background-image: 
-                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-                radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
-                radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
-            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            font-family: var(--font-main);
+            color: var(--text-main);
+            /* Subtle Background Glow */
+            background-image: radial-gradient(circle at 50% 0%, rgba(249, 115, 22, 0.15) 0%, transparent 50%);
         }
-        
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .sub-text {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        /* Container for Clerk */
         #sign-up-container {
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            border-radius: 12px;
-            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
         }
+
+        .back-link {
+            margin-top: 30px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+        .back-link:hover { color: #f8fafc; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
+    <div class="brand-header">
+        <div class="logo">AI Study</div>
+        <div class="sub-text">Join us and start learning smarter.</div>
+    </div>
+
     <div id="sign-up-container"></div>
+
+    <a href="../index.html" class="back-link">← Back to Home</a>
 
     <script>
       const publishableKey = "pk_test_c3RlYWR5LXNocmV3LTgxLmNsZXJrLmFjY291bnRzLmRldiQ"; 
@@ -45,15 +98,34 @@
         if (Clerk.user) {
           window.location.href = "../index.html";
         } else {
+          
+          // MOUNT SIGN UP WITH ORANGE/PINK THEME
           Clerk.mountSignUp(document.getElementById("sign-up-container"), {
              afterSignUpUrl: "../index.html",
              afterSignInUrl: "../index.html",
+             
              appearance: {
+               baseTheme: 'dark', // Forces Dark Mode
                variables: {
-                 colorPrimary: '#7f5af0',
+                 colorPrimary: '#f97316',       // Orange Primary Color
+                 colorBackground: '#1e293b',    // Slate 800 (Card Color)
+                 colorText: '#f8fafc',          // White Text
+                 fontFamily: 'Inter, sans-serif',
+                 borderRadius: '16px'
+               },
+               elements: {
+                 card: {
+                   border: '1px solid rgba(255,255,255,0.1)',
+                   boxShadow: '0 10px 40px -10px rgba(0,0,0,0.5)'
+                 },
+                 formButtonPrimary: {
+                   background: 'linear-gradient(135deg, #f97316 0%, #db2777 100%)', // Gradient Button
+                   border: 'none'
+                 }
                }
              }
           });
+
         }
       });
     </script>

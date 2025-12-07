@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>My Profile — AI Study</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../styles.css">
 
 <script
@@ -16,99 +17,330 @@
 ></script>
 
 <style>
-/* ---------- THEME VARIABLES ---------- */
-:root {
-    --bg-color: #050507;
-    --text-main: #ffffff;
-    --primary-gradient: linear-gradient(135deg, #6366f1, #3b82f6);
-    --card-border: rgba(255, 255, 255, 0.08);
-}
+  /* =========================================
+     1. THEME VARIABLES (Orange/Pink Match)
+     ========================================= */
+  :root {
+    --font-main: 'Inter', sans-serif;
+    --transition-speed: 0.3s;
+    
+    /* DARK MODE DEFAULTS */
+    --bg-body: #0f172a;      
+    --bg-sidebar: #1e293b;   
+    --bg-card: rgba(30, 41, 59, 0.7);
+    --border-color: rgba(255, 255, 255, 0.1);
+    
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    
+    /* ORANGE & PINK GRADIENT */
+    --accent-primary: #f97316; /* Orange */
+    --accent-secondary: #db2777; /* Pink */
+    --accent-gradient: linear-gradient(135deg, #f97316 0%, #db2777 100%);
+    
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --nav-hover: rgba(255, 255, 255, 0.05);
+  }
 
-body {
-    background: var(--bg-color);
-    color: var(--text-main);
-    font-family: "Inter", sans-serif;
+  /* LIGHT MODE OVERRIDES */
+  [data-theme="light"] {
+    --bg-body: #f8fafc;
+    --bg-sidebar: #ffffff;
+    --bg-card: #ffffff;
+    --border-color: #e2e8f0;
+
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+
+    --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --nav-hover: #f1f5f9;
+  }
+
+  /* =========================================
+     2. GLOBAL RESET
+     ========================================= */
+  * { box-sizing: border-box; }
+  
+  body {
     margin: 0;
-}
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    font-family: var(--font-main);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+  }
 
-/* Sidebar Styling */
-.sidebar { 
-    position: fixed; height: 100vh; top: 0; left: 0; width: 250px; 
-    border-right: 1px solid var(--card-border); background: var(--bg-color); 
-    z-index: 10; display: flex; flex-direction: column;
-}
+  a { text-decoration: none; color: inherit; }
 
-.sidebar a {
-    padding: 15px 24px; color: #a1a1aa; text-decoration: none;
-    font-size: 14px; font-weight: 500; transition: 0.2s;
-}
-.sidebar a:hover { color: #fff; background: rgba(255,255,255,0.03); }
-.sidebar a.active { color: #fff; background: rgba(99, 102, 241, 0.1); border-right: 3px solid #6366f1; }
+  /* =========================================
+     3. SIDEBAR (Fixed Layout)
+     ========================================= */
+  .sidebar {
+    width: 260px;
+    height: 100vh;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+    position: fixed;
+    top: 0; left: 0;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+  }
 
-.content-with-sidebar { 
-    margin-left: 250px; 
-    padding: 40px; 
+  .brand {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 30px;
+    padding-left: 12px;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .nav-links a {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+  }
+  
+  .nav-links a:hover {
+    background: var(--nav-hover);
+    color: var(--text-main);
+    transform: translateX(4px);
+  }
+
+  .nav-links a.active {
+    background: rgba(249, 115, 22, 0.1);
+    color: var(--accent-primary);
+    font-weight: 600;
+  }
+
+  .nav-icon { margin-right: 12px; font-size: 1.1rem; }
+  .spacer { flex: 1; }
+
+  /* =========================================
+     4. MAIN CONTENT
+     ========================================= */
+  .main-content {
+    margin-left: 260px;
+    padding: 40px 60px;
     min-height: 100vh;
     display: flex;
-    justify-content: center; /* Centers the profile box */
-    align-items: flex-start;
-}
+    flex-direction: column;
+    align-items: center;
+  }
 
-/* Container for the Clerk Profile */
-#user-profile-mount {
+  .top-bar {
     width: 100%;
-    max-width: 800px;
-    margin-top: 20px;
-}
+    max-width: 900px;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+  }
+  
+  .theme-toggle {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+  }
+  .theme-toggle:hover { transform: scale(1.05); }
+
+  .page-header { 
+    text-align: center; 
+    margin-bottom: 40px; 
+    animation: fadeIn 0.5s ease;
+    width: 100%; 
+  }
+  
+  .h-gradient {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
+    line-height: 1.2;
+  }
+  
+  .sub-text {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-top: 10px;
+  }
+
+  /* =========================================
+     5. PROFILE CONTAINER
+     ========================================= */
+  #user-profile-mount {
+    width: 100%;
+    max-width: 880px; /* Fits Clerk profile nicely */
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    min-height: 600px; /* Prevent layout shift */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  /* Helper for loading state */
+  .clerk-loader {
+    width: 40px; height: 40px; 
+    border: 4px solid rgba(249, 115, 22, 0.3);
+    border-top-color: var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    .sidebar { width: 70px; padding: 20px 10px; }
+    .nav-links a span:last-child { display: none; }
+    .nav-icon { margin: 0; font-size: 1.5rem; width: 100%; text-align: center; }
+    .main-content { margin-left: 70px; padding: 20px; }
+    .brand { display: none; }
+  }
+
 </style>
 </head>
-
 <body>
 
-<aside class="sidebar" id="sidebar">
-    <div class="brand" style="padding:24px; font-size:22px; font-weight:800; background:var(--primary-gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">AI Study</div>
-    
-    <a href="../index.html">Home</a>
-    <a href="summarize.html">Summarize PDF</a>
-    <a href="make-notes.html">Make Notes</a>
-    <a href="mcq.html">Make MCQ</a>
-    <a href="explain.html">Explain</a>
-    <a href="qna.html">QnA</a>
-    <a href="notes.html">History</a>
-    
-    <div class="spacer" style="height:40px"></div>
-    
-    <a href="profile.html" class="active">Profile</a>
+<aside class="sidebar">
+  <div class="brand">AI Study</div>
+  <nav class="nav-links">
+    <a href="../index.html"><span class="nav-icon">🏠</span><span>Home</span></a>
+    <a href="flashcards.html"><span class="nav-icon">⚡</span><span>Flashcards</span></a>
+    <a href="mindmap.html"><span class="nav-icon">🧠</span><span>Mind Map</span></a>
+    <a href="summarize.html"><span class="nav-icon">📝</span><span>Summarize PDF</span></a>
+    <a href="make-notes.html"><span class="nav-icon">✍️</span><span>Make Notes</span></a>
+    <a href="mcq.html"><span class="nav-icon">❓</span><span>Make MCQ</span></a>
+    <a href="explain.html"><span class="nav-icon">💡</span><span>Explain</span></a>
+    <a href="qna.html"><span class="nav-icon">💬</span><span>QnA</span></a>
+    <a href="notes.html"><span class="nav-icon">🕰️</span><span>History</span></a>
+    <div class="spacer"></div>
+    <a href="profile.html" class="active"><span class="nav-icon">⚙️</span><span>Settings</span></a>
+  </nav>
 </aside>
 
-<main class="content-with-sidebar">
-    <div id="user-profile-mount"></div>
+<main class="main-content">
+  
+  <div class="top-bar">
+    <button id="theme-btn" class="theme-toggle" title="Toggle Theme">
+      <span id="theme-icon">🌙</span>
+    </button>
+  </div>
+
+  <div class="page-header">
+    <h1 class="h-gradient">Account Settings</h1>
+    <p class="sub-text">Manage your personal details and security preferences.</p>
+  </div>
+
+  <div id="user-profile-mount">
+      <div class="clerk-loader"></div>
+  </div>
+
 </main>
 
 <script>
-    window.addEventListener("load", async function () {
-        // 1. Initialize Clerk
-        await Clerk.load();
+  // --- 1. THEME LOGIC ---
+  const themeBtn = document.getElementById('theme-btn');
+  const themeIcon = document.getElementById('theme-icon');
+  const htmlEl = document.documentElement;
 
-        if (!Clerk.user) {
-            // If not logged in, force them back to login page
-            window.location.href = "login.html";
-        } else {
-            // 2. Mount the Full Profile Component
-            const mountDiv = document.getElementById("user-profile-mount");
-            
-            Clerk.mountUserProfile(mountDiv, {
-                appearance: {
-                    baseTheme: 'dark', // Matches your dark website
-                    variables: {
-                        colorPrimary: '#6366f1', // Your purple/blue brand color
-                        colorBackground: '#050507', // Your dark background
-                        colorText: '#ffffff'
-                    }
-                }
-            });
-        }
-    });
+  // Load saved theme or default to dark
+  const savedTheme = localStorage.getItem('ai_study_theme') || 'dark';
+  htmlEl.setAttribute('data-theme', savedTheme);
+  updateIcon(savedTheme);
+
+  themeBtn.addEventListener('click', () => {
+    const current = htmlEl.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    htmlEl.setAttribute('data-theme', next);
+    localStorage.setItem('ai_study_theme', next);
+    updateIcon(next);
+    
+    // Reload page to force Clerk to re-render with new theme colors
+    // (Clerk components don't always hot-swap themes dynamically via JS easily)
+    setTimeout(() => window.location.reload(), 200); 
+  });
+
+  function updateIcon(theme) {
+    themeIcon.innerText = theme === 'dark' ? '🌙' : '☀️';
+  }
+
+  // --- 2. CLERK INITIALIZATION ---
+  window.addEventListener("load", async function () {
+    const mountDiv = document.getElementById("user-profile-mount");
+
+    try {
+      await Clerk.load();
+
+      if (!Clerk.user) {
+        window.location.href = "login.html";
+      } else {
+        
+        // Define Theme Variables for Clerk to match our CSS
+        const isDark = htmlEl.getAttribute('data-theme') === 'dark';
+        
+        // Configuration for Clerk Appearance
+        const appearance = {
+          baseTheme: isDark ? 'dark' : undefined,
+          variables: {
+            colorPrimary: '#f97316', // Orange
+            colorText: isDark ? '#f8fafc' : '#0f172a',
+            colorBackground: isDark ? '#1e293b' : '#ffffff',
+            fontFamily: 'Inter, sans-serif',
+            borderRadius: '12px'
+          },
+          elements: {
+            card: {
+              boxShadow: 'none',
+              border: 'none',
+              width: '100%'
+            },
+            navbar: {
+                display: 'none' // Optional: Hides Clerk sidebar if you want a cleaner look
+            }
+          }
+        };
+
+        // Clear loader
+        mountDiv.innerHTML = "";
+        
+        // Mount Profile
+        Clerk.mountUserProfile(mountDiv, { appearance });
+      }
+
+    } catch (err) {
+      console.error("Clerk Error:", err);
+      mountDiv.innerHTML = "<p style='color:red'>Error loading profile system.</p>";
+    }
+  });
 </script>
 
 </body>

@@ -1,163 +1,430 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <title>Ask Questions — AI Study</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../styles.css">
 
 <style>
-  .page-wrapper { max-width:920px; margin:36px auto; padding: 0 20px; }
-  
-  /* Input Card */
-  .card { 
-    padding:24px; 
-    border-radius:16px; 
-    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); 
-    box-shadow:0 10px 30px rgba(2,6,23,0.55); 
-    border: 1px solid rgba(255,255,255,0.05);
+  /* =========================================
+     1. THEME VARIABLES (Orange/Pink Match)
+     ========================================= */
+  :root {
+    --font-main: 'Inter', sans-serif;
+    --transition-speed: 0.3s;
+    
+    /* DARK MODE DEFAULTS */
+    --bg-body: #0f172a;      
+    --bg-sidebar: #1e293b;   
+    --bg-card: rgba(30, 41, 59, 0.7);
+    --border-color: rgba(255, 255, 255, 0.1);
+    
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    
+    /* ORANGE & PINK GRADIENT */
+    --accent-primary: #f97316; /* Orange */
+    --accent-secondary: #db2777; /* Pink */
+    --accent-gradient: linear-gradient(135deg, #f97316 0%, #db2777 100%);
+    
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --nav-hover: rgba(255, 255, 255, 0.05);
   }
 
-  textarea { 
-    width:100%; 
-    padding:16px; 
-    border-radius:12px; 
-    background:rgba(0,0,0,0.2); 
-    border:1px solid rgba(255,255,255,0.1); 
-    color:inherit; 
-    resize:vertical; 
-    font-size:1rem;
-    transition: 0.2s;
-    font-family: inherit;
+  /* LIGHT MODE OVERRIDES */
+  [data-theme="light"] {
+    --bg-body: #f8fafc;
+    --bg-sidebar: #ffffff;
+    --bg-card: #ffffff;
+    --border-color: #e2e8f0;
+
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+
+    --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --nav-hover: #f1f5f9;
   }
-  textarea:focus { border-color: #7f5af0; outline: none; background:rgba(0,0,0,0.3); }
+
+  /* =========================================
+     2. GLOBAL RESET
+     ========================================= */
+  * { box-sizing: border-box; }
+  
+  body {
+    margin: 0;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    font-family: var(--font-main);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+  }
+
+  a { text-decoration: none; color: inherit; }
+
+  /* =========================================
+     3. SIDEBAR (Fixed Layout)
+     ========================================= */
+  .sidebar {
+    width: 260px;
+    height: 100vh;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+    position: fixed;
+    top: 0; left: 0;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+  }
+
+  .brand {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 30px;
+    padding-left: 12px;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .nav-links a {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+  }
+  
+  .nav-links a:hover {
+    background: var(--nav-hover);
+    color: var(--text-main);
+    transform: translateX(4px);
+  }
+
+  .nav-links a.active {
+    background: rgba(249, 115, 22, 0.1);
+    color: var(--accent-primary);
+    font-weight: 600;
+  }
+
+  .nav-icon { margin-right: 12px; font-size: 1.1rem; }
+  .spacer { flex: 1; }
+
+  /* =========================================
+     4. MAIN CONTENT
+     ========================================= */
+  .main-content {
+    margin-left: 260px;
+    padding: 40px 60px;
+    min-height: 100vh;
+    max-width: 1000px;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+  }
+  
+  .theme-toggle {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+  }
+  .theme-toggle:hover { transform: scale(1.05); }
+
+  .page-header { text-align: center; margin-bottom: 40px; animation: fadeIn 0.5s ease; }
+  
+  .h-gradient {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
+    line-height: 1.2;
+  }
+  
+  .sub-text {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-top: 10px;
+  }
+
+  /* =========================================
+     5. WHITE INPUT CARD
+     ========================================= */
+  .input-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 40px;
+  }
+
+  /* Forced White Textarea */
+  textarea {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    background-color: #ffffff !important; 
+    color: #1e293b !important;
+    border: 2px solid #e2e8f0;
+    font-size: 1.05rem;
+    font-family: var(--font-main);
+    resize: vertical;
+    transition: 0.2s;
+    min-height: 160px;
+    line-height: 1.6;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+  }
+  textarea:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.15);
+  }
+  textarea::placeholder { color: #94a3b8; }
 
   /* Question Row */
-  .input-row { display:flex; gap:12px; margin-top:16px; align-items:flex-start; flex-wrap: wrap; }
-  
+  .input-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* Forced White Input */
   input[type="text"] {
     flex-grow: 1;
     min-width: 250px;
     padding: 14px;
     border-radius: 12px;
-    background: rgba(0,0,0,0.2);
-    border: 1px solid rgba(255,255,255,0.1);
-    color: #fff;
+    background-color: #ffffff !important; 
+    color: #1e293b !important;
+    border: 2px solid #e2e8f0;
     font-size: 1rem;
     transition: 0.2s;
   }
-  input[type="text"]:focus { border-color: #7f5af0; outline: none; background:rgba(0,0,0,0.3); }
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.15);
+  }
+  input[type="text"]::placeholder { color: #94a3b8; }
 
-  /* Buttons */
-  .btn-primary { 
-    padding:14px 24px; 
-    border-radius:12px; 
-    border:none; 
-    background:linear-gradient(90deg,#7f5af0,#5eead4); 
-    color:#021; 
-    font-weight:700; 
-    cursor:pointer;
+  .btn-primary {
+    background: var(--accent-gradient);
+    color: #fff;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+    transition: transform 0.2s;
     white-space: nowrap;
-    transition: transform 0.1s;
   }
-  .btn-primary:active { transform: scale(0.97); }
+  .btn-primary:active { transform: scale(0.96); }
+  .btn-primary:disabled { opacity: 0.7; cursor: wait; }
 
-  /* ----------------------- */
-  /* RESULT STYLES          */
-  /* ----------------------- */
-  
-  .result-container { margin-top: 30px; animation: fadeIn 0.4s ease; }
+  .section-label {
+    margin-bottom: 8px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
 
-  /* Answer Box */
+  /* =========================================
+     6. RESULT UI
+     ========================================= */
+  .result-container {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  /* Answer Card */
   .answer-card {
-    background: rgba(255,255,255,0.02);
-    border-left: 4px solid #5eead4; /* Teal Accent */
-    border-radius: 0 12px 12px 0;
-    padding: 24px;
-    margin-bottom: 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--accent-primary);
+    border-radius: 0 20px 20px 0;
+    padding: 30px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-card);
   }
-  .answer-label { font-size: 0.85rem; color: #5eead4; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 700; }
-  .answer-text { font-size: 1.1rem; line-height: 1.6; color: #fff; }
+  .answer-label {
+    font-size: 0.9rem;
+    color: var(--accent-primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+  .answer-text {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--text-main);
+  }
 
   /* Evidence Box */
   .evidence-box {
-    background: rgba(127, 90, 240, 0.1);
-    padding: 16px;
+    background: rgba(219, 39, 119, 0.08); /* Pink tint */
+    border: 1px dashed var(--accent-secondary);
+    padding: 20px;
     border-radius: 12px;
-    border: 1px dashed rgba(127, 90, 240, 0.3);
-    margin-bottom: 20px;
+    margin-bottom: 24px;
   }
-  .evidence-label { font-size: 0.8rem; color: #a5b4fc; margin-bottom: 4px; display:flex; align-items:center; gap:6px; font-weight: 700; }
-  .evidence-text { font-style: italic; color: rgba(255,255,255,0.8); font-size: 0.95rem; line-height: 1.5; }
+  .evidence-label {
+    font-size: 0.85rem;
+    color: var(--accent-secondary);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+  }
+  .evidence-text {
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
 
   /* Follow Ups */
-  .follow-label { font-size: 0.9rem; margin-bottom: 12px; color: rgba(255,255,255,0.6); }
+  .follow-label { font-size: 0.95rem; margin-bottom: 12px; color: var(--text-muted); font-weight: 500; }
   .chips-container { display: flex; flex-wrap: wrap; gap: 10px; }
   .chip {
-    padding: 10px 18px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    padding: 10px 20px;
+    background: var(--bg-body);
+    border: 1px solid var(--border-color);
     border-radius: 24px;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     cursor: pointer;
     transition: 0.2s;
-    color: #e2e8f0;
+    color: var(--text-main);
   }
-  .chip:hover { background: rgba(127, 90, 240, 0.2); border-color: #7f5af0; color: #fff; transform: translateY(-2px); }
+  .chip:hover {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+  }
 
-  .hidden { display:none }
-  .loader { width:20px; height:20px; border-radius:50%; border:3px solid rgba(255,255,255,0.1); border-top-color:#5eead4; animation:spin 900ms linear infinite; display:inline-block; vertical-align: middle; }
-  @keyframes fadeIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
-  @keyframes spin { to{transform:rotate(360deg)} }
+  .loader { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.3); border-top-color: var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
+  .hidden { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    .sidebar { width: 70px; padding: 20px 10px; }
+    .nav-links a span:last-child { display: none; }
+    .nav-icon { margin: 0; font-size: 1.5rem; width: 100%; text-align: center; }
+    .main-content { margin-left: 70px; padding: 20px; }
+    .brand { display: none; }
+  }
 
 </style>
 </head>
 <body>
 
-<aside class="sidebar" id="sidebar">
+ <aside class="sidebar">
   <div class="brand">AI Study</div>
-  <a href="../index.html">Home</a>
-  <a href="flashcards.html">Flashcards</a>
-  <a href="mindmap.html" class="active">Mind Map</a>
-  <a href="summarize.html">Summarize PDF</a>
-  <a href="make-notes.html">Make Notes</a>
-  <a href="mcq.html">Make MCQ</a>
-  <a href="explain.html">Explain</a>
-  <a href="qna.html" class="active">QnA</a>
-  <a href="notes.html">Notes History</a>
-  <div class="spacer"></div>
-  <a href="profile.html">Update Profile</a>
-  <a href="delete-account.html">Delete Account</a>
+  <nav class="nav-links">
+    <a href="../index.html"><span class="nav-icon">🏠</span><span>Home</span></a>
+    <a href="flashcards.html"><span class="nav-icon">⚡</span><span>Flashcards</span></a>
+    <a href="mindmap.html"><span class="nav-icon">🧠</span><span>Mind Map</span></a>
+    <a href="summarize.html"><span class="nav-icon">📝</span><span>Summarize PDF</span></a>
+    <a href="make-notes.html"><span class="nav-icon">✍️</span><span>Make Notes</span></a>
+    <a href="mcq.html"><span class="nav-icon">❓</span><span>Make MCQ</span></a>
+    <a href="explain.html"><span class="nav-icon">💡</span><span>Explain</span></a>
+    <a href="qna.html" class="active"><span class="nav-icon">💬</span><span>QnA</span></a>
+    <a href="notes.html"><span class="nav-icon">🕰️</span><span>History</span></a>
+    <div class="spacer"></div>
+    <a href="profile.html"><span class="nav-icon">⚙️</span><span>Settings</span></a>
+  </nav>
 </aside>
 
-<main class="content-with-sidebar">
-  <div class="page-wrapper container">
-    <h1 class="h-gradient">Ask Questions</h1>
-    <p class="center mt-8">Ask specific questions about your text and get instant, evidence-backed answers.</p>
+<main class="main-content">
+  
+  <div class="top-bar">
+    <button id="theme-btn" class="theme-toggle" title="Toggle Theme">
+      <span id="theme-icon">🌙</span>
+    </button>
+  </div>
 
-    <div class="card mt-18">
-      
-      <div style="margin-bottom:8px; color:rgba(255,255,255,0.5); font-size:0.85rem; font-weight:600; text-transform: uppercase;">1. Paste Content (Context)</div>
-      <textarea id="qna-context" rows="5" placeholder="Paste the chapter, article, or notes you want to ask about..."></textarea>
-      
-      <div style="margin-top:24px; margin-bottom:8px; color:rgba(255,255,255,0.5); font-size:0.85rem; font-weight:600; text-transform: uppercase;">2. Your Question</div>
-      <div class="input-row">
+  <div class="page-header">
+    <h1 class="h-gradient">Ask Questions</h1>
+    <p class="sub-text">Ask specific questions about your text and get instant, evidence-backed answers.</p>
+  </div>
+
+  <div class="input-card">
+    <div class="section-label">1. Context (Paste Text)</div>
+    <textarea id="qna-context" placeholder="Paste the chapter, article, or notes you want to ask about..."></textarea>
+    
+    <div class="section-label" style="margin-top:24px;">2. Your Question</div>
+    <div class="input-row">
         <input type="text" id="qna-question" placeholder="e.g. What are the key limitations mentioned in this text?">
         <button id="qna-btn" class="btn-primary">Ask AI</button>
-      </div>
-       
-      <div style="text-align:right; margin-top:10px; height:20px;">
-        <span id="loader" class="loader hidden"></span>
-      </div>
     </div>
-
-    <div id="qna-result"></div>
+    
+    <div style="text-align:right; margin-top:10px; height:24px;">
+        <span id="loader" class="loader hidden"></span>
+    </div>
   </div>
+
+  <div id="qna-result" style="padding-bottom: 50px;"></div>
+
 </main>
 
 <script src="../config.js"></script>
 <script>
 (() => {
+  // --- 1. THEME LOGIC ---
+  const themeBtn = document.getElementById('theme-btn');
+  const themeIcon = document.getElementById('theme-icon');
+  const htmlEl = document.documentElement;
+
+  const savedTheme = localStorage.getItem('ai_study_theme') || 'dark';
+  htmlEl.setAttribute('data-theme', savedTheme);
+  updateIcon(savedTheme);
+
+  themeBtn.addEventListener('click', () => {
+    const current = htmlEl.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    htmlEl.setAttribute('data-theme', next);
+    localStorage.setItem('ai_study_theme', next);
+    updateIcon(next);
+  });
+
+  function updateIcon(theme) {
+    themeIcon.innerText = theme === 'dark' ? '🌙' : '☀️';
+  }
+
+  // --- 2. QNA LOGIC ---
   const API = window.API_BASE || "";
   const tokenKey = "ai_study_token";
   
@@ -168,15 +435,12 @@
   const out = document.getElementById("qna-result");
 
   const esc = t => String(t||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
-  
-  // Helper to make **bold** text render as actual HTML bold
-  const parseBold = t => esc(t).replace(/\*\*(.*?)\*\*/g, '<strong style="color:#5eead4">$1</strong>');
+  const parseBold = t => esc(t).replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent-primary)">$1</strong>');
 
-  // --- API Call Function ---
   async function askAI(question) {
     const text = contextEl.value.trim();
-    if(!text) { alert("Please paste some context text first."); return; }
-    if(!question) { alert("Please ask a question."); return; }
+    if(!text) return alert("Please paste context text first.");
+    if(!question) return alert("Please ask a question.");
 
     out.innerHTML = "";
     loader.classList.remove("hidden");
@@ -187,46 +451,39 @@
       const token = localStorage.getItem(tokenKey);
       if(token) headers["Authorization"] = "Bearer " + token;
 
-      // 👇 FIXED: Added /api/study prefix
       const resp = await fetch(`${API}/api/study/qna`, { 
         method: "POST",
         headers,
-        body: JSON.stringify({ text: text, question: question }) 
+        body: JSON.stringify({ text, question }) 
       });
 
       const data = await resp.json();
-      
-      // Handle the wrapper if backend sends { "answer_data": { ... } }
       const result = data.answer_data || data;
 
       renderResult(result);
 
     } catch(err) {
-      out.innerHTML = `<p style="color:#ff4d6d; text-align:center; margin-top:20px;">Error: ${esc(err.message)}</p>`;
+      out.innerHTML = `<p style="color:#ef4444; text-align:center;">Error: ${esc(err.message)}</p>`;
     } finally {
       loader.classList.add("hidden");
       btn.disabled = false;
     }
   }
 
-  // --- Render Function ---
   function renderResult(data) {
-    // Case: Answer found success=false (e.g. not in text)
     if(data.success === false && data.answer) {
        out.innerHTML = `
          <div class="result-container">
-           <div class="answer-card" style="border-left-color:#ff4d6d">
-             <div class="answer-label" style="color:#ff4d6d">Not Found</div>
+           <div class="answer-card" style="border-left-color:#ef4444">
+             <div class="answer-label" style="color:#ef4444">Not Found</div>
              <div class="answer-text">${esc(data.answer)}</div>
            </div>
          </div>`;
        return;
     }
 
-    // Case: Success
     let html = `
       <div class="result-container">
-        
         <div class="answer-card">
           <div class="answer-label">AI Answer</div>
           <div class="answer-text">${parseBold(data.answer)}</div>
@@ -234,35 +491,29 @@
 
         ${ data.evidence ? `
         <div class="evidence-box">
-          <div class="evidence-label">📖 Source Evidence</div>
+          <div class="evidence-label">📖 Evidence from Text</div>
           <div class="evidence-text">"...${esc(data.evidence)}..."</div>
         </div>` : '' }
 
-        ${ data.follow_ups && data.follow_ups.length > 0 ? `
+        ${ data.follow_ups?.length > 0 ? `
         <div class="follow-label">Suggested Follow-ups:</div>
         <div class="chips-container">
           ${data.follow_ups.map(q => {
-             // Escape single quotes correctly for the inline function call
              const safeQ = q.replace(/'/g, "\\'");
              return `<div class="chip" onclick="setInputAndAsk('${safeQ}')">${esc(q)}</div>`;
           }).join('')}
         </div>` : '' }
-
       </div>
     `;
-
     out.innerHTML = html;
   }
 
-  // --- Event Listeners ---
   btn.addEventListener("click", () => askAI(questionEl.value.trim()));
   
-  // Allow Enter key in question input
   questionEl.addEventListener("keypress", (e) => {
     if(e.key === "Enter") askAI(questionEl.value.trim());
   });
 
-  // Global helper for the Chips to work
   window.setInputAndAsk = (q) => {
     questionEl.value = q;
     askAI(q);
